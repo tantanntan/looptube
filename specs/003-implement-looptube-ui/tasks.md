@@ -23,8 +23,8 @@
 > ⚠️ **FR-016 Gate** — T001 is a user/manual action. No implementation work may start until `specs/003-implement-looptube-ui/design-refs/LoopTube.dc.html` exists in the repo.
 
 - [ ] T001 Export `LoopTube.dc.html` and reference screenshots from claude.ai design project `22934576-e45f-4f40-ad9a-5a47dbc2260a` and commit to `specs/003-implement-looptube-ui/design-refs/` (FR-016 gate — manual user action)
-- [ ] T002 Create `scripts/subset-fonts.sh` — shell script that runs `pyftsubset` on the three typefaces and outputs `.woff2` files to `static/fonts/` with the Unicode ranges defined in `research.md` section 6
-- [ ] T003 [P] Create directory skeleton `static/fonts/barlow/`, `static/fonts/noto-sans-jp/`, `static/fonts/roboto-mono/` with `.gitkeep` placeholders (replaced by T013)
+- [X] T002 Create `scripts/subset-fonts.sh` — shell script that runs `pyftsubset` on the three typefaces and outputs `.woff2` files to `static/fonts/` with the Unicode ranges defined in `research.md` section 6
+- [X] T003 [P] Create directory skeleton `static/fonts/barlow/`, `static/fonts/noto-sans-jp/`, `static/fonts/roboto-mono/` with `.gitkeep` placeholders (replaced by T013)
 
 **Checkpoint**: Design reference committed; font tooling ready — coding can begin.
 
@@ -40,17 +40,17 @@
 
 > **Write these tests FIRST and confirm they FAIL before T007–T011**
 
-- [ ] T004 [P] Write failing unit tests for `parseLocale` and `createTranslator` (key lookup, missing key fallback, nested key notation) in `tests/unit/i18n.test.ts`
-- [ ] T005 [P] Write failing unit tests for `parseLocale` edge cases — RFC 5646 multi-tag headers, `ja-JP` → `'ja'`, unknown → `'en'` fallback — in `tests/unit/locale-detector.test.ts`
-- [ ] T006 [P] Write failing unit test for `ABLoopStateMachine.tick()` finite-loop completion: after N-th repetition, state stays `LOOPING` with `loopCount: 'infinite'` and A/B preserved; action is `STOP_AND_SEEK` to `pointB` (stops at Point B per spec US4 scenario 2) — in `tests/unit/ABLoopStateMachine.test.ts`
+- [X] T004 [P] Write failing unit tests for `parseLocale` and `createTranslator` (key lookup, missing key fallback, nested key notation) in `tests/unit/i18n.test.ts`
+- [X] T005 [P] Write failing unit tests for `parseLocale` edge cases — RFC 5646 multi-tag headers, `ja-JP` → `'ja'`, unknown → `'en'` fallback — in `tests/unit/locale-detector.test.ts`
+- [X] T006 [P] Write failing unit test for `ABLoopStateMachine.tick()` finite-loop completion: after N-th repetition, state stays `LOOPING` with `loopCount: 'infinite'` and A/B preserved; action is `STOP_AND_SEEK` to `pointB` (stops at Point B per spec US4 scenario 2) — in `tests/unit/ABLoopStateMachine.test.ts`
 
 ### Implementation for Foundational Modules
 
-- [ ] T007 Implement `src/lib/i18n/index.ts` — export `Locale` type, `createTranslator(locale: Locale): (key: string) => string`, `parseLocale(header: string): Locale` (satisfies T004, T005)
-- [ ] T008 [P] Update `src/lib/i18n/en.json` — add `loops.section_heading`, `loops.save_placeholder`, `loops.save_button`, `loops.delete_confirm`, `loops.confirm_yes`, `loops.confirm_no`, `loops.empty`, `loops.delete`; `playback.counter`; `timeline.zoom_in`, `timeline.zoom_out`
-- [ ] T009 [P] Update `src/lib/i18n/ja.json` — add identical key set as T008 with Japanese translations
-- [ ] T010 Apply targeted change to `src/lib/core/ABLoopStateMachine.ts` — final-repetition branch in `tick()`: replace `this.state = { status: 'IDLE' }` with `this.state = { ...s, loopsCompleted: nextCompleted, loopCount: 'infinite' }`; replace `to: s.pointA` with `to: s.pointB` in the `STOP_AND_SEEK` return (satisfies T006)
-- [ ] T011 Remove `export const ssr = false;` from `src/routes/+page.ts` (file becomes empty — delete it); create `src/routes/+page.server.ts` — add `import type { PageServerLoad } from './$types'; import { parseLocale } from '$lib/i18n/index.js'; export const load: PageServerLoad = ({ request }) => { const locale = parseLocale(request.headers.get('accept-language') ?? ''); return { locale }; }` (Note: `request` is only available in server load — `+page.server.ts` not `+page.ts`)
+- [X] T007 Implement `src/lib/i18n/index.ts` — export `Locale` type, `createTranslator(locale: Locale): (key: string) => string`, `parseLocale(header: string): Locale` (satisfies T004, T005)
+- [X] T008 [P] Update `src/lib/i18n/en.json` — add `loops.section_heading`, `loops.save_placeholder`, `loops.save_button`, `loops.delete_confirm`, `loops.confirm_yes`, `loops.confirm_no`, `loops.empty`, `loops.delete`; `playback.counter`; `timeline.zoom_in`, `timeline.zoom_out`
+- [X] T009 [P] Update `src/lib/i18n/ja.json` — add identical key set as T008 with Japanese translations
+- [X] T010 Apply targeted change to `src/lib/core/ABLoopStateMachine.ts` — final-repetition branch in `tick()`: replace `this.state = { status: 'IDLE' }` with `this.state = { ...s, loopsCompleted: nextCompleted, loopCount: 'infinite' }`; replace `to: s.pointA` with `to: s.pointB` in the `STOP_AND_SEEK` return (satisfies T006)
+- [X] T011 Remove `export const ssr = false;` from `src/routes/+page.ts` (file becomes empty — delete it); create `src/routes/+page.server.ts` — add `import type { PageServerLoad } from './$types'; import { parseLocale } from '$lib/i18n/index.js'; export const load: PageServerLoad = ({ request }) => { const locale = parseLocale(request.headers.get('accept-language') ?? ''); return { locale }; }` (Note: `request` is only available in server load — `+page.server.ts` not `+page.ts`)
 
 **Checkpoint**: i18n module functional, ABLoopStateMachine change merged and covered, SSR enabled — all story phases may begin.
 
@@ -66,16 +66,16 @@
 
 > **Write and confirm FAILING before T013–T018**
 
-- [ ] T012 [P] [US1] Write failing E2E scenarios for dark-theme mobile layout in `tests/e2e/looptube.spec.ts` — 375px viewport: no horizontal overflow, LOOPTUBE logotype present, all controls within viewport
+- [X] T012 [P] [US1] Write failing E2E scenarios for dark-theme mobile layout in `tests/e2e/looptube.spec.ts` — 375px viewport: no horizontal overflow, LOOPTUBE logotype present, all controls within viewport
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Run `scripts/subset-fonts.sh` to produce `.woff2` files; commit `static/fonts/barlow/barlow-semibold.woff2`, `static/fonts/noto-sans-jp/noto-sans-jp-regular.woff2`, `static/fonts/roboto-mono/roboto-mono-regular.woff2` (max 50 KB each per SC-002)
-- [ ] T014 [P] [US1] Create `src/lib/components/LoopTubeHeader.svelte` — renders LOOPTUBE logotype using Barlow font; no props required per `ui-contracts.md` `LoopTubeHeaderProps`
-- [ ] T015 [US1] Create `src/app.css` if not present and add `import '../app.css';` to `src/routes/+layout.svelte`; then add `@font-face` declarations for all three fonts with `font-display: swap` and correct `src: url('/fonts/…') format('woff2')` paths (depends on T013)
-- [ ] T016 [US1] Apply dark-theme global CSS to `src/app.css` — background colour, text colour, spacing tokens, and typography scale from `specs/003-implement-looptube-ui/design-refs/LoopTube.dc.html` (depends on T001)
-- [ ] T017 [US1] Apply mobile-first responsive layout to `src/routes/+page.svelte` — 375 px base, centered `max-width` container for desktop, add `<LoopTubeHeader>` at top (depends on T014, T015, T016)
-- [ ] T018 [US1] Audit and fix 44 × 44 px touch targets and WCAG 2.1 AA focus indicators in `src/lib/components/ABControls.svelte`, `src/lib/components/PlaybackControls.svelte`, and any other interactive components
+- [X] T013 [P] [US1] Run `scripts/subset-fonts.sh` to produce `.woff2` files; commit `static/fonts/barlow/barlow-semibold.woff2`, `static/fonts/noto-sans-jp/noto-sans-jp-regular.woff2`, `static/fonts/roboto-mono/roboto-mono-regular.woff2` (max 50 KB each per SC-002)
+- [X] T014 [P] [US1] Create `src/lib/components/LoopTubeHeader.svelte` — renders LOOPTUBE logotype using Barlow font; no props required per `ui-contracts.md` `LoopTubeHeaderProps`
+- [X] T015 [US1] Create `src/app.css` if not present and add `import '../app.css';` to `src/routes/+layout.svelte`; then add `@font-face` declarations for all three fonts with `font-display: swap` and correct `src: url('/fonts/…') format('woff2')` paths (depends on T013)
+- [X] T016 [US1] Apply dark-theme global CSS to `src/app.css` — background colour, text colour, spacing tokens, and typography scale from `specs/003-implement-looptube-ui/design-refs/LoopTube.dc.html` (depends on T001)
+- [X] T017 [US1] Apply mobile-first responsive layout to `src/routes/+page.svelte` — 375 px base, centered `max-width` container for desktop, add `<LoopTubeHeader>` at top (depends on T014, T015, T016)
+- [X] T018 [US1] Audit and fix 44 × 44 px touch targets and WCAG 2.1 AA focus indicators in `src/lib/components/ABControls.svelte`, `src/lib/components/PlaybackControls.svelte`, and any other interactive components
 
 **Checkpoint**: US1 visually verifiable on a 375 px device with Barlow logotype; all touch targets ≥ 44 × 44 px.
 
@@ -91,16 +91,16 @@
 
 > **Write and confirm FAILING before T022–T025**
 
-- [ ] T019 [P] [US2] Write failing unit tests for pure timeline helpers in `tests/unit/Timeline.drag.test.ts` — `clampPointA`, `clampPointB` (min-gap 0.1 s), `pxToSeconds` (full-video and zoom-window modes), `secondsToPercent`
-- [ ] T020 [P] [US2] Write failing unit tests for `computeZoomWindow` edge cases in `tests/unit/ZoomState.test.ts` — very short loop (< 1 s), loop at start (`pointA = 0`), loop at end (`pointB = duration`)
-- [ ] T021 [P] [US2] Write failing E2E scenarios for drag and zoom in `tests/e2e/looptube.spec.ts` — drag A/B in full-video and zoom mode, zoom button hidden when no A-B loop, marker clamping
+- [X] T019 [P] [US2] Write failing unit tests for pure timeline helpers in `tests/unit/Timeline.drag.test.ts` — `clampPointA`, `clampPointB` (min-gap 0.1 s), `pxToSeconds` (full-video and zoom-window modes), `secondsToPercent`
+- [X] T020 [P] [US2] Write failing unit tests for `computeZoomWindow` edge cases in `tests/unit/ZoomState.test.ts` — very short loop (< 1 s), loop at start (`pointA = 0`), loop at end (`pointB = duration`)
+- [X] T021 [P] [US2] Write failing E2E scenarios for drag and zoom in `tests/e2e/looptube.spec.ts` — drag A/B in full-video and zoom mode, zoom button hidden when no A-B loop, marker clamping
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Create `src/lib/utils/timeline.ts` — export pure helpers: `formatTime`, `computeZoomWindow`, `pxToSeconds`, `secondsToPercent`, `clampPointA`, `clampPointB` (satisfies T019, T020; no DOM/Svelte imports)
-- [ ] T023 [US2] Create `src/lib/components/Timeline.svelte` — Pointer Events API drag (`pointerdown`, `pointermove`, `pointerup`, `setPointerCapture`), moving playhead, A-B highlighted region, per `TimelineProps` in `ui-contracts.md` (depends on T022)
-- [ ] T024 [US2] Add zoom state to `src/routes/+page.svelte` — `zoomActive: boolean` (`$state`), `onZoomToggle` handler calling `computeZoomWindow`; zoom button rendered in `Timeline.svelte` only when `pointA !== null && pointB !== null` per `TimelineProps` contract (depends on T022, T023)
-- [ ] T025 [US2] Replace `<ProgressBar>` with `<Timeline>` in `src/routes/+page.svelte` — wire `currentTime`, `duration`, `pointA`, `pointB`, `zoomActive`, `onDragA`, `onDragB`, `onZoomToggle`, `onSeek`, `t` per page orchestrator section of `ui-contracts.md` (depends on T023, T024)
+- [X] T022 [US2] Create `src/lib/utils/timeline.ts` — export pure helpers: `formatTime`, `computeZoomWindow`, `pxToSeconds`, `secondsToPercent`, `clampPointA`, `clampPointB` (satisfies T019, T020; no DOM/Svelte imports)
+- [X] T023 [US2] Create `src/lib/components/Timeline.svelte` — Pointer Events API drag (`pointerdown`, `pointermove`, `pointerup`, `setPointerCapture`), moving playhead, A-B highlighted region, per `TimelineProps` in `ui-contracts.md` (depends on T022)
+- [X] T024 [US2] Add zoom state to `src/routes/+page.svelte` — `zoomActive: boolean` (`$state`), `onZoomToggle` handler calling `computeZoomWindow`; zoom button rendered in `Timeline.svelte` only when `pointA !== null && pointB !== null` per `TimelineProps` contract (depends on T022, T023)
+- [X] T025 [US2] Replace `<ProgressBar>` with `<Timeline>` in `src/routes/+page.svelte` — wire `currentTime`, `duration`, `pointA`, `pointB`, `zoomActive`, `onDragA`, `onDragB`, `onZoomToggle`, `onSeek`, `t` per page orchestrator section of `ui-contracts.md` (depends on T023, T024)
 
 **Checkpoint**: US2 independently testable — drag and zoom work on device; unit tests green; E2E drag scenarios pass.
 
@@ -116,12 +116,12 @@
 
 > **Write and confirm FAILING before T026–T027**
 
-- [ ] T026a [P] [US3] Write failing unit tests for `ABControls.svelte` — `formatTime` display, conditional nudge/clear button rendering when point is `null` — in `tests/unit/ABControls.test.ts`
+- [X] T026a [P] [US3] Write failing unit tests for `ABControls.svelte` — `formatTime` display, conditional nudge/clear button rendering when point is `null` — in `tests/unit/ABControls.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Update `src/lib/components/ABControls.svelte` — add `t: (key: string) => string` prop; hide nudge (−0.1 s / +0.1 s) and clear buttons when the corresponding point is `null`; display timestamps via `formatTime` from `src/lib/utils/timeline.ts`; per `ABControlsProps` in `ui-contracts.md`
-- [ ] T027 [US3] Wire `t` prop to `<ABControls>` in `src/routes/+page.svelte`
+- [X] T026 [US3] Update `src/lib/components/ABControls.svelte` — add `t: (key: string) => string` prop; hide nudge (−0.1 s / +0.1 s) and clear buttons when the corresponding point is `null`; display timestamps via `formatTime` from `src/lib/utils/timeline.ts`; per `ABControlsProps` in `ui-contracts.md`
+- [X] T027 [US3] Wire `t` prop to `<ABControls>` in `src/routes/+page.svelte`
 
 **Checkpoint**: US3 independently testable — nudge/clear buttons hidden when point not set; timestamps in `MM:SS.s`.
 
@@ -137,13 +137,13 @@
 
 > **Write and confirm FAILING before T028–T030**
 
-- [ ] T027a [P] [US4] Write failing unit tests for `PlaybackControls.svelte` — 0.25× speed option present in rendered output, N/M counter display when `loopCount` is a number, "∞" display when `loopCount === 'infinite'` — in `tests/unit/PlaybackControls.test.ts`
+- [X] T027a [P] [US4] Write failing unit tests for `PlaybackControls.svelte` — 0.25× speed option present in rendered output, N/M counter display when `loopCount` is a number, "∞" display when `loopCount === 'infinite'` — in `tests/unit/PlaybackControls.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T028 [US4] Update `src/lib/components/PlaybackControls.svelte` — add `0.25` to speed options array `[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2]`; add `loopsCompleted: number` and `t: (key: string) => string` props per `PlaybackControlsProps` in `ui-contracts.md`
-- [ ] T029 [US4] Implement N/M counter display in `PlaybackControls.svelte` — when `loopCount` is a number: show `"${loopsCompleted} / ${loopCount}"`; when `loopCount === 'infinite'`: show `"∞"` (FR-003 exempt)
-- [ ] T030 [US4] Wire `loopsCompleted` and `t` to `<PlaybackControls>` in `src/routes/+page.svelte` — derive `loopsCompleted` as `machineState.status === 'LOOPING' ? machineState.loopsCompleted : 0`
+- [X] T028 [US4] Update `src/lib/components/PlaybackControls.svelte` — add `0.25` to speed options array `[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2]`; add `loopsCompleted: number` and `t: (key: string) => string` props per `PlaybackControlsProps` in `ui-contracts.md`
+- [X] T029 [US4] Implement N/M counter display in `PlaybackControls.svelte` — when `loopCount` is a number: show `"${loopsCompleted} / ${loopCount}"`; when `loopCount === 'infinite'`: show `"∞"` (FR-003 exempt)
+- [X] T030 [US4] Wire `loopsCompleted` and `t` to `<PlaybackControls>` in `src/routes/+page.svelte` — derive `loopsCompleted` as `machineState.status === 'LOOPING' ? machineState.loopsCompleted : 0`
 
 **Checkpoint**: US4 independently testable — 0.25× speed available; N/M counter shows during finite looping; ∞ resets on completion; A/B preserved after finite completion (validated by T006 unit test from Phase 2).
 
@@ -159,13 +159,13 @@
 
 > **Write and confirm FAILING before T032–T034**
 
-- [ ] T031 [P] [US5] Write failing E2E scenarios for inline delete confirmation in `tests/e2e/looptube.spec.ts` — trash tap shows Yes/No inline; Yes removes; No reverts; at most one row in confirm mode
+- [X] T031 [P] [US5] Write failing E2E scenarios for inline delete confirmation in `tests/e2e/looptube.spec.ts` — trash tap shows Yes/No inline; Yes removes; No reverts; at most one row in confirm mode
 
 ### Implementation for User Story 5
 
-- [ ] T032 [US5] Create `src/lib/components/LoopList.svelte` — replaces `SegmentList.svelte`; renders "Saved Loops" section heading (always visible); empty-state placeholder when `loops.length === 0`; per `LoopListProps` in `ui-contracts.md`
-- [ ] T033 [US5] Implement inline delete-with-confirmation in `LoopList.svelte` — `deleteConfirmId: string | null` as `$state`; trash icon tap sets `deleteConfirmId = id`; row expands to show `t('loops.delete_confirm')` + Yes/No buttons; Yes calls `onDelete`, No resets; `$effect` resets on `loops` prop change
-- [ ] T034 [US5] Wire `<LoopList>` in `src/routes/+page.svelte` — replace `<SegmentList>` import and usage; pass `loops`, `t`, `onLoad`, `onDelete`
+- [X] T032 [US5] Create `src/lib/components/LoopList.svelte` — replaces `SegmentList.svelte`; renders "Saved Loops" section heading (always visible); empty-state placeholder when `loops.length === 0`; per `LoopListProps` in `ui-contracts.md`
+- [X] T033 [US5] Implement inline delete-with-confirmation in `LoopList.svelte` — `deleteConfirmId: string | null` as `$state`; trash icon tap sets `deleteConfirmId = id`; row expands to show `t('loops.delete_confirm')` + Yes/No buttons; Yes calls `onDelete`, No resets; `$effect` resets on `loops` prop change
+- [X] T034 [US5] Wire `<LoopList>` in `src/routes/+page.svelte` — replace `<SegmentList>` import and usage; pass `loops`, `t`, `onLoad`, `onDelete`
 
 **Checkpoint**: US5 independently testable — saved loops load on page reload; inline delete flow complete; section heading always visible; empty state shown for no loops.
 
@@ -181,12 +181,12 @@
 
 > **Write and confirm FAILING before T036–T037**
 
-- [ ] T035 [P] [US6] Write failing E2E scenarios for locale detection in `tests/e2e/looptube.spec.ts` — `Accept-Language: ja` → Japanese strings visible; `Accept-Language: en` → English; no locale header → English fallback
+- [X] T035 [P] [US6] Write failing E2E scenarios for locale detection in `tests/e2e/looptube.spec.ts` — `Accept-Language: ja` → Japanese strings visible; `Accept-Language: en` → English; no locale header → English fallback
 
 ### Implementation for User Story 6
 
-- [ ] T036 [US6] Wire `data.locale` into `src/routes/+page.svelte` — read from server `load()` result (implemented in T011); create `const t = createTranslator(data.locale)`; thread `t` prop to `<Timeline>`, `<ABControls>`, `<PlaybackControls>`, `<LoopList>` (satisfies T035)
-- [ ] T037 [US6] Add SC-007 compliance check — Vitest test in `tests/unit/i18n.test.ts` or ESLint rule that scans `src/` for hard-coded user-facing strings not present in `en.json`; exempt tokens: `"LOOPTUBE"`, `"A"`, `"B"`, `"×"`, `"∞"`, `"MM:SS.s"`
+- [X] T036 [US6] Wire `data.locale` into `src/routes/+page.svelte` — read from server `load()` result (implemented in T011); create `const t = createTranslator(data.locale)`; thread `t` prop to `<Timeline>`, `<ABControls>`, `<PlaybackControls>`, `<LoopList>` (satisfies T035)
+- [X] T037 [US6] Add SC-007 compliance check — Vitest test in `tests/unit/i18n.test.ts` or ESLint rule that scans `src/` for hard-coded user-facing strings not present in `en.json`; exempt tokens: `"LOOPTUBE"`, `"A"`, `"B"`, `"×"`, `"∞"`, `"MM:SS.s"`
 
 **Checkpoint**: US6 independently testable — locale switching works from browser `Accept-Language`; zero hard-coded strings detected by lint/test.
 
@@ -196,10 +196,10 @@
 
 **Purpose**: Quality gates, coverage validation, performance audit, and final integration checks.
 
-- [ ] T038 [P] Verify full Vitest unit + integration test suite: `npm run test:unit && npm run test:integration` — confirm 100% pass rate with zero failures
-- [ ] T039 [P] Verify coverage gate: `npx vitest run --coverage` — confirm 100% branch and statement coverage for `src/lib/core/ABLoopStateMachine.ts` and `src/lib/core/SegmentRepository.ts` (constitution VIII)
-- [ ] T040 [P] Type check: `npx tsc --noEmit` — confirm zero TypeScript strict-mode errors across all new and modified files
-- [ ] T041 [P] Lint: `npm run lint` — confirm zero ESLint errors including import boundary violations (domain modules must not import DOM/Svelte/SvelteKit)
+- [X] T038 [P] Verify full Vitest unit + integration test suite: `npm run test:unit && npm run test:integration` — confirm 100% pass rate with zero failures
+- [X] T039 [P] Verify coverage gate: `npx vitest run --coverage` — confirm 100% branch and statement coverage for `src/lib/core/ABLoopStateMachine.ts` and `src/lib/core/SegmentRepository.ts` (constitution VIII)
+- [X] T040 [P] Type check: `npx tsc --noEmit` — confirm zero TypeScript strict-mode errors across all new and modified files
+- [X] T041 [P] Lint: `npm run lint` — confirm zero ESLint errors including import boundary violations (domain modules must not import DOM/Svelte/SvelteKit)
 - [ ] T042 Lighthouse audit on 375 px mobile viewport — confirm SC-002 FMP < 2.0 s under Fast 4G throttling; SC-006 accessibility score ≥ 90; each self-hosted font file ≤ 50 KB
 
 ---
