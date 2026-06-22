@@ -349,7 +349,7 @@
 			bind:value={urlInput}
 			placeholder="Paste a YouTube URL or video ID"
 		/>
-		<button type="submit">Load</button>
+		<button type="submit">{t('player.load')}</button>
 	</form>
 
 	<!-- Always rendered so div#yt-player exists before YouTube IFrame API init -->

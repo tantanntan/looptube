@@ -1,12 +1,15 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/svelte';
 import PlaybackControls from '../../src/lib/components/PlaybackControls.svelte';
+import { createTranslator } from '../../src/lib/i18n/index.js';
 
 afterEach(() => cleanup());
 
+const t = createTranslator('en');
+
 describe('PlaybackControls.svelte', () => {
 	it('renders speed selector with 7 options including 0.25', () => {
-		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite' });
+		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', t });
 		const select = screen.getByRole('combobox', { name: /speed/i });
 		expect(select).toBeTruthy();
 		const options = select.querySelectorAll('option');
@@ -15,20 +18,20 @@ describe('PlaybackControls.svelte', () => {
 
 	it('calls onSpeedChange when speed is selected', async () => {
 		const onSpeedChange = vi.fn();
-		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', onSpeedChange });
+		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', onSpeedChange, t });
 		const select = screen.getByRole('combobox', { name: /speed/i });
 		await fireEvent.change(select, { target: { value: '0.5' } });
 		expect(onSpeedChange).toHaveBeenCalledWith(0.5);
 	});
 
 	it('renders loop count input', () => {
-		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite' });
+		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', t });
 		expect(screen.getByRole('spinbutton', { name: /loop count/i })).toBeTruthy();
 	});
 
 	it('calls onLoopCountChange with number when count is set', async () => {
 		const onLoopCountChange = vi.fn();
-		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', onLoopCountChange });
+		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', onLoopCountChange, t });
 		const input = screen.getByRole('spinbutton', { name: /loop count/i });
 		await fireEvent.change(input, { target: { value: '3' } });
 		expect(onLoopCountChange).toHaveBeenCalledWith(3);
@@ -36,7 +39,7 @@ describe('PlaybackControls.svelte', () => {
 
 	it('calls onLoopCountChange with infinite when 0 is entered', async () => {
 		const onLoopCountChange = vi.fn();
-		render(PlaybackControls, { speed: 1.0, loopCount: 3, onLoopCountChange });
+		render(PlaybackControls, { speed: 1.0, loopCount: 3, onLoopCountChange, t });
 		const input = screen.getByRole('spinbutton', { name: /loop count/i });
 		await fireEvent.change(input, { target: { value: '0' } });
 		expect(onLoopCountChange).toHaveBeenCalledWith('infinite');

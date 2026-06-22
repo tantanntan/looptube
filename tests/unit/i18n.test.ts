@@ -146,13 +146,16 @@ describe('SC-007: no hard-coded user-facing strings in Svelte templates', () => 
 		'Loop Count',
 	];
 
+	// SegmentList.svelte is superseded by LoopList.svelte — excluded from i18n scan
+	const DEPRECATED_FILES = new Set(['SegmentList.svelte']);
+
 	function getSvelteFiles(dir: string): string[] {
 		const results: string[] = [];
 		for (const entry of readdirSync(dir, { withFileTypes: true })) {
 			const full = join(dir, entry.name);
 			if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
 				results.push(...getSvelteFiles(full));
-			} else if (entry.name.endsWith('.svelte')) {
+			} else if (entry.name.endsWith('.svelte') && !DEPRECATED_FILES.has(entry.name)) {
 				results.push(full);
 			}
 		}

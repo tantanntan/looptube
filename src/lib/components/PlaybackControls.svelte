@@ -28,14 +28,14 @@
 </script>
 
 <div class="playback-controls">
-	<label for="speed-select">Speed</label>
+	<label for="speed-select">{t('playback.speed')}</label>
 	<select id="speed-select" value={speed} onchange={handleSpeedChange}>
 		{#each SPEEDS as s}
 			<option value={s}>{s}×</option>
 		{/each}
 	</select>
 
-	<label for="loop-count">Loop Count</label>
+	<label for="loop-count">{t('playback.loop_count')}</label>
 	<input
 		id="loop-count"
 		type="number"
@@ -43,7 +43,7 @@
 		max="99"
 		value={loopCount === 'infinite' ? 0 : loopCount}
 		onchange={handleLoopCountChange}
-		aria-label="Loop Count"
+		aria-label={t('playback.loop_count')}
 	/>
 	<span>{loopCount === 'infinite' ? '∞' : `${loopsCompleted} / ${loopCount}`}</span>
 </div>
