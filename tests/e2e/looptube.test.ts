@@ -32,6 +32,30 @@ test.describe('Timeline drag and zoom (T021 - RED)', () => {
 	});
 });
 
+// T031: LoopList inline delete confirmation — fails until T032-T034 complete
+test.describe('LoopList inline delete confirmation (T031 - RED)', () => {
+	test.use({ viewport: { width: 375, height: 812 } });
+
+	test('Saved Loops section heading is always visible', async ({ page }) => {
+		await page.goto('/');
+		await expect(page.getByText('Saved Loops')).toBeVisible();
+	});
+
+	test('trash button shows inline Yes/No confirmation', async ({ page }) => {
+		await page.goto('/');
+		// Requires at least one saved loop — skip if none present (list may be empty)
+		const deleteBtn = page.getByRole('button', { name: /delete/i }).first();
+		const hasLoop = await deleteBtn.isVisible().catch(() => false);
+		if (!hasLoop) {
+			test.skip();
+			return;
+		}
+		await deleteBtn.click();
+		await expect(page.getByRole('button', { name: /yes/i })).toBeVisible();
+		await expect(page.getByRole('button', { name: /no/i })).toBeVisible();
+	});
+});
+
 // T012: Dark-theme mobile layout — fails until T013-T018 complete
 
 test.describe('Dark-theme mobile layout (375px)', () => {
