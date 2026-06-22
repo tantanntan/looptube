@@ -107,7 +107,7 @@
 			<div
 				class="marker marker-a"
 				role="slider"
-				aria-label="Point A"
+				aria-label={t('loop.point_a')}
 				aria-valuenow={pointA}
 				aria-valuemin={0}
 				aria-valuemax={duration}
@@ -121,7 +121,7 @@
 			<div
 				class="marker marker-b"
 				role="slider"
-				aria-label="Point B"
+				aria-label={t('loop.point_b')}
 				aria-valuenow={pointB}
 				aria-valuemin={0}
 				aria-valuemax={duration}

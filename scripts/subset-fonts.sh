@@ -39,11 +39,11 @@ pyftsubset \
   --output-file="${OUT_DIR}/roboto-mono/roboto-mono-regular.woff2"
 
 echo "==> Extracting CJK codepoints from ja.json..."
-UNICODES=$(python3 - <<'PYEOF'
+UNICODES=$(REPO_ROOT="$REPO_ROOT" python3 - <<'PYEOF'
 import json, sys, os
 
-repo = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-ja_json = os.path.join(repo, 'scripts', '..', 'src', 'lib', 'i18n', 'ja.json')
+repo = os.environ['REPO_ROOT']
+ja_json = os.path.join(repo, 'src', 'lib', 'i18n', 'ja.json')
 with open(ja_json, encoding='utf-8') as f:
     text = f.read()
 

@@ -175,6 +175,7 @@
 			progressInterval = setInterval(() => {
 				currentTime = player.getCurrentTime();
 				duration = player.getDuration();
+				machineState = machine.getState();
 			}, 100);
 		});
 	});
@@ -419,13 +420,14 @@
 			<p role="status">{shareToast}</p>
 		{/if}
 
-		<LoopList
-			loops={segments}
-			{t}
-			onLoad={handleLoadSegment}
-			onDelete={handleDeleteSegment}
-		/>
 	{/if}
+
+	<LoopList
+		loops={segments}
+		{t}
+		onLoad={handleLoadSegment}
+		onDelete={handleDeleteSegment}
+	/>
 </main>
 
 <style>

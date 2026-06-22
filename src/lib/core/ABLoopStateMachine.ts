@@ -115,6 +115,10 @@ export class ABLoopStateMachine {
 	tick(currentTime: number): TickAction {
 		const s = this.state;
 		if (s.status !== 'LOOPING') return { type: 'NONE' };
+		// After finite-loop completion, loopsCompleted equals loopCount — don't rewind
+		if (s.loopCount !== 'infinite' && s.loopsCompleted >= s.loopCount) {
+			return { type: 'NONE' };
+		}
 		if (currentTime < s.pointB) return { type: 'NONE' };
 
 		const nextCompleted = s.loopsCompleted + 1;
@@ -129,8 +133,8 @@ export class ABLoopStateMachine {
 			return { type: 'SEEK', to: s.pointA };
 		}
 
-		// Final repetition: stay LOOPING (infinite) at pointB
-		this.state = { ...s, loopsCompleted: nextCompleted, loopCount: 'infinite' };
+		// Final repetition: keep loopCount as-is so loopsCompleted >= loopCount on next tick
+		this.state = { ...s, loopsCompleted: nextCompleted };
 		return { type: 'STOP_AND_SEEK', to: s.pointB };
 	}
 }

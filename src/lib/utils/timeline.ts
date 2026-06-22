@@ -50,10 +50,11 @@ export function secondsToPercent(
 }
 
 export function computeZoomWindow(pointA: number, pointB: number, duration: number): ZoomWindow {
+	// Equal padding of span/2 on each side → window = span*2 → loop ≥ 50%
 	const span = pointB - pointA;
-	const padding = Math.max(span * 0.2, 1);
+	const halfPad = span * 0.5;
 	return {
-		start: Math.max(0, pointA - padding),
-		end: Math.min(duration, pointB + padding)
+		start: Math.max(0, pointA - halfPad),
+		end: Math.min(duration, pointB + halfPad)
 	};
 }

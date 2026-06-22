@@ -80,3 +80,19 @@ button {
 	outline: 2px solid var(--color-accent);
 	outline-offset: 2px;
 }
+
+/* LoopTubeHeader */
+.looptube-header {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-3) var(--space-4);
+}
+
+.looptube-logotype {
+	font-family: 'Barlow', sans-serif;
+	font-weight: 600;
+	font-size: 1.5rem;
+	letter-spacing: 0.15em;
+	color: var(--color-text);
+}

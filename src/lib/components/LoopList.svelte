@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Segment } from '$lib/ports/StoragePort.js';
+	import { formatTime } from '$lib/utils/timeline.js';
 
 	type Props = {
 		loops: Segment[];
@@ -45,7 +46,10 @@
 						<button onclick={() => handleYes(loop.id)}>{t('loops.confirm_yes')}</button>
 						<button onclick={handleNo}>{t('loops.confirm_no')}</button>
 					{:else}
-						<button onclick={() => onLoad(loop)}>{loop.name}</button>
+						<button onclick={() => onLoad(loop)}>
+						{loop.name}
+						<span class="loop-meta">{formatTime(loop.pointA)}–{formatTime(loop.pointB)} ×{loop.speed}</span>
+					</button>
 						<button
 							aria-label={t('loops.delete')}
 							aria-describedby="loop-name-{loop.id}"
