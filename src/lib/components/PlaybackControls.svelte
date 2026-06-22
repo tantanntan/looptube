@@ -1,14 +1,16 @@
 <script lang="ts">
-	const SPEEDS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+	const SPEEDS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 
 	type Props = {
 		speed: number;
 		loopCount: number | 'infinite';
+		loopsCompleted?: number;
+		t?: (key: string) => string;
 		onSpeedChange?: (speed: number) => void;
 		onLoopCountChange?: (count: number | 'infinite') => void;
 	};
 
-	let { speed, loopCount, onSpeedChange, onLoopCountChange }: Props = $props();
+	let { speed, loopCount, loopsCompleted = 0, t = (k: string) => k, onSpeedChange, onLoopCountChange }: Props = $props();
 
 	function handleSpeedChange(e: Event) {
 		const val = parseFloat((e.target as HTMLSelectElement).value);
@@ -43,5 +45,5 @@
 		onchange={handleLoopCountChange}
 		aria-label="Loop Count"
 	/>
-	<span>{loopCount === 'infinite' ? 'Infinite' : `${loopCount} times`}</span>
+	<span>{loopCount === 'infinite' ? '∞' : `${loopsCompleted} / ${loopCount}`}</span>
 </div>

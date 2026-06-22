@@ -5,12 +5,12 @@ import PlaybackControls from '../../src/lib/components/PlaybackControls.svelte';
 afterEach(() => cleanup());
 
 describe('PlaybackControls.svelte', () => {
-	it('renders speed selector with 6 options', () => {
+	it('renders speed selector with 7 options including 0.25', () => {
 		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite' });
 		const select = screen.getByRole('combobox', { name: /speed/i });
 		expect(select).toBeTruthy();
 		const options = select.querySelectorAll('option');
-		expect(options.length).toBe(6);
+		expect(options.length).toBe(7);
 	});
 
 	it('calls onSpeedChange when speed is selected', async () => {
