@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync, readdirSync } from 'fs';
+import { resolve, join } from 'path';
 import { parseLocale, createTranslator } from '../../src/lib/i18n/index.js';
 
 describe('parseLocale', () => {
@@ -128,4 +130,49 @@ describe('createTranslator', () => {
 		const ja = createTranslator('ja');
 		expect(en('player.load')).not.toBe(ja('player.load'));
 	});
+});
+
+// T037: SC-007 compliance — no hard-coded user-facing strings in Svelte templates
+describe('SC-007: no hard-coded user-facing strings in Svelte templates', () => {
+	const EXEMPT = new Set(['LOOPTUBE', 'A', 'B', '×', '∞', 'MM:SS.s', '—', '0', '+0.1', '−0.1', '-0.1', 'Set A', 'Set B', 'Clear Loop']);
+
+	// English strings that must come from t() calls, not be hard-coded
+	const EN_STRINGS = [
+		'Saved Loops',
+		'No saved loops',
+		'Delete this loop',
+		'Load',
+		'Speed',
+		'Loop Count',
+	];
+
+	function getSvelteFiles(dir: string): string[] {
+		const results: string[] = [];
+		for (const entry of readdirSync(dir, { withFileTypes: true })) {
+			const full = join(dir, entry.name);
+			if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
+				results.push(...getSvelteFiles(full));
+			} else if (entry.name.endsWith('.svelte')) {
+				results.push(full);
+			}
+		}
+		return results;
+	}
+
+	const srcDir = resolve('src');
+	const svelteFiles = getSvelteFiles(srcDir);
+
+	for (const str of EN_STRINGS) {
+		if (EXEMPT.has(str)) continue;
+		it(`"${str}" does not appear hard-coded in any Svelte template`, () => {
+			const violations = svelteFiles.filter((f) => {
+				const content = readFileSync(f, 'utf-8');
+				// Only check the HTML template section (after </script>)
+				const templatePart = content.split('</script>').slice(1).join('</script>');
+				// Exempt {t('...')} calls and inside t() translations
+				return templatePart.includes(`>${str}<`) || templatePart.includes(`"${str}"`) && !templatePart.includes(`t('`) ;
+			});
+			expect(violations, `Hard-coded "${str}" found in: ${violations.join(', ')}`).toHaveLength(0);
+		});
+	}
 });
