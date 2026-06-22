@@ -26,7 +26,22 @@
 		"speed": "再生速度",
 		"loop_count": "ループ回数",
 		"infinite": "無限",
-		"times": "回"
+		"times": "回",
+		"counter": "{n} / {m}"
+	},
+	"loops": {
+		"section_heading": "保存済みループ",
+		"save_placeholder": "ループ名（例：サビ 4小節目）",
+		"save_button": "ループを保存",
+		"delete_confirm": "このループを削除しますか？",
+		"confirm_yes": "はい",
+		"confirm_no": "いいえ",
+		"empty": "この動画の保存済みループはありません。",
+		"delete": "削除"
+	},
+	"timeline": {
+		"zoom_in": "A-B区間にズームイン",
+		"zoom_out": "全体表示に戻す"
 	},
 	"segment": {
 		"save": "保存",

@@ -129,8 +129,8 @@ export class ABLoopStateMachine {
 			return { type: 'SEEK', to: s.pointA };
 		}
 
-		// Final repetition
-		this.state = { status: 'IDLE' };
-		return { type: 'STOP_AND_SEEK', to: s.pointA };
+		// Final repetition: stay LOOPING (infinite) at pointB
+		this.state = { ...s, loopsCompleted: nextCompleted, loopCount: 'infinite' };
+		return { type: 'STOP_AND_SEEK', to: s.pointB };
 	}
 }
