@@ -41,4 +41,22 @@ describe('PlaybackControls.svelte', () => {
 		await fireEvent.change(input, { target: { value: '0' } });
 		expect(onLoopCountChange).toHaveBeenCalledWith('infinite');
 	});
+
+	// T027a: Failing tests — pass after T028-T029
+	it('speed selector includes 0.25x option', () => {
+		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', loopsCompleted: 0, t: (k: string) => k });
+		const select = screen.getByRole('combobox', { name: /speed/i });
+		const options = Array.from(select.querySelectorAll('option')).map((o) => o.value);
+		expect(options).toContain('0.25');
+	});
+
+	it('displays N/M counter when loopCount is a finite number', () => {
+		render(PlaybackControls, { speed: 1.0, loopCount: 5, loopsCompleted: 2, t: (k: string) => k });
+		expect(screen.getByText('2 / 5')).toBeTruthy();
+	});
+
+	it('displays ∞ symbol when loopCount is infinite', () => {
+		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', loopsCompleted: 0, t: (k: string) => k });
+		expect(screen.getByText('∞')).toBeTruthy();
+	});
 });
