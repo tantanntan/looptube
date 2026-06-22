@@ -249,23 +249,56 @@ describe('ABLoopStateMachine', () => {
 			expect(m.getState().status).toBe('HAS_A');
 		});
 
-		it('returns STOP_AND_SEEK on final repetition', () => {
+		it('returns STOP_AND_SEEK to pointB (not pointA) on final repetition', () => {
 			const m = new ABLoopStateMachine();
 			m.setA(10);
 			m.setB(30);
 			m.setLoopCount(2);
 			m.tick(30); // loop 1 → SEEK
-			const action = m.tick(30); // loop 2 → STOP_AND_SEEK
-			expect(action).toEqual({ type: 'STOP_AND_SEEK', to: 10 });
+			const action = m.tick(30); // loop 2 → STOP_AND_SEEK to pointB
+			expect(action).toEqual({ type: 'STOP_AND_SEEK', to: 30 });
 		});
 
-		it('transitions to IDLE after STOP_AND_SEEK', () => {
+		it('stays LOOPING with loopCount infinite after final repetition', () => {
 			const m = new ABLoopStateMachine();
 			m.setA(10);
 			m.setB(30);
 			m.setLoopCount(1);
 			m.tick(30);
-			expect(m.getState().status).toBe('IDLE');
+			const s = m.getState();
+			expect(s.status).toBe('LOOPING');
+			if (s.status === 'LOOPING') {
+				expect(s.loopCount).toBe('infinite');
+				expect(s.pointA).toBe(10);
+				expect(s.pointB).toBe(30);
+				expect(s.loopsCompleted).toBe(1);
+			}
+		});
+
+		it('preserves pointA and pointB after finite-loop completion', () => {
+			const m = new ABLoopStateMachine();
+			m.setA(5);
+			m.setB(25);
+			m.setLoopCount(3);
+			m.tick(25); // loop 1
+			m.tick(25); // loop 2
+			m.tick(25); // loop 3 — final
+			const s = m.getState();
+			expect(s.status).toBe('LOOPING');
+			if (s.status === 'LOOPING') {
+				expect(s.pointA).toBe(5);
+				expect(s.pointB).toBe(25);
+			}
+		});
+
+		it('after finite-loop completion, subsequent tick returns SEEK (infinite behavior)', () => {
+			const m = new ABLoopStateMachine();
+			m.setA(10);
+			m.setB(30);
+			m.setLoopCount(1);
+			m.tick(30); // final → STOP_AND_SEEK, now loopCount = 'infinite'
+			const nextAction = m.tick(30);
+			expect(nextAction).toEqual({ type: 'SEEK', to: 10 });
 		});
 
 		it('never returns STOP_AND_SEEK when count is infinite', () => {
