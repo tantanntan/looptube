@@ -1,0 +1,26 @@
+diff --git a/src/exports/vite/dev/index.js b/src/exports/vite/dev/index.js
+index aadd288cac6369de2b37d40c912044682fe7d122..66f29d4f5f65d031165ca23121ebb4332a1c90f5 100644
+--- a/src/exports/vite/dev/index.js
++++ b/src/exports/vite/dev/index.js
+@@ -247,7 +247,7 @@ export async function dev(vite, vite_config, svelte_config, get_remotes) {
+ 										: dep.url + '?inline';
+ 									try {
+ 										const mod = await vite.ssrLoadModule(inlineCssUrl);
+-										styles[dep.url] = mod.default;
++										if (mod.default != null) styles[dep.url] = mod.default;
+ 									} catch {
+ 										// this can happen with dynamically imported modules, I think
+ 										// because the Vite module graph doesn't distinguish between
+diff --git a/src/runtime/server/page/render.js b/src/runtime/server/page/render.js
+index ca7e044248e5137d52322650d677503f3872c9f1..e5c30df0194bf5c000c482b000fdc9f39f693c9e 100644
+--- a/src/runtime/server/page/render.js
++++ b/src/runtime/server/page/render.js
+@@ -294,6 +294,8 @@ export async function render_response({
+ 					return;
+ 				}
+ 
++				if (typeof css !== 'function') return;
++
+ 				inline_styles.set(filename, css(`${assets}/${paths.app_dir}/immutable/assets`, assets));
+ 			});
+ 		}
