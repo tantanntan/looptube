@@ -393,6 +393,8 @@
 		<PlaybackControls
 			{speed}
 			{loopCount}
+			loopsCompleted={machineState.status === 'LOOPING' ? machineState.loopsCompleted : 0}
+			{t}
 			onSpeedChange={handleSpeedChange}
 			onLoopCountChange={handleLoopCountChange}
 		/>
