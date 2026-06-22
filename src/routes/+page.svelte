@@ -16,11 +16,13 @@
 	import type { VideoPlayerPort } from '$lib/ports/VideoPlayerPort.js';
 	import VideoPlayer from '$lib/components/VideoPlayer.svelte';
 	import ABControls from '$lib/components/ABControls.svelte';
-	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import Timeline from '$lib/components/Timeline.svelte';
 	import PlaybackControls from '$lib/components/PlaybackControls.svelte';
 	import SegmentList from '$lib/components/SegmentList.svelte';
 	import LoopTubeHeader from '$lib/components/LoopTubeHeader.svelte';
 	import { createTranslator } from '$lib/i18n/index.js';
+	import { computeZoomWindow } from '$lib/utils/timeline.js';
+	import type { ZoomWindow } from '$lib/utils/timeline.js';
 	import type { Segment } from '$lib/ports/StoragePort.js';
 	import type { PageData } from './$types';
 
@@ -44,6 +46,8 @@
 	let loopCount = $state<number | 'infinite'>('infinite');
 	let segments = $state<Segment[]>([]);
 	let segmentName = $state('');
+	let zoomActive = $state(false);
+	let zoomWindow = $state<ZoomWindow | null>(null);
 
 	let progressInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -251,6 +255,44 @@
 		machineState = machine.getState();
 	}
 
+	function handleZoomToggle() {
+		const s = machine.getState();
+		if (s.status !== 'LOOPING') return;
+		if (!zoomActive) {
+			zoomWindow = computeZoomWindow(s.pointA, s.pointB, duration);
+			zoomActive = true;
+		} else {
+			zoomActive = false;
+			zoomWindow = null;
+		}
+	}
+
+	function handleDragA(seconds: number) {
+		machine.setA(seconds);
+		machineState = machine.getState();
+		if (zoomActive) {
+			const s = machine.getState();
+			if (s.status === 'LOOPING') {
+				zoomWindow = computeZoomWindow(s.pointA, s.pointB, duration);
+			}
+		}
+	}
+
+	function handleDragB(seconds: number) {
+		machine.setB(seconds);
+		machineState = machine.getState();
+		if (zoomActive) {
+			const s = machine.getState();
+			if (s.status === 'LOOPING') {
+				zoomWindow = computeZoomWindow(s.pointA, s.pointB, duration);
+			}
+		}
+	}
+
+	function handleSeek(seconds: number) {
+		player.seekTo(seconds);
+	}
+
 	function handleNudgeLastSet(delta: number) {
 		const s = machine.getState();
 		if (s.status === 'LOOPING') {
@@ -314,7 +356,7 @@
 	<VideoPlayer {player} {videoId} />
 
 	{#if videoId}
-		<ProgressBar
+		<Timeline
 			{currentTime}
 			{duration}
 			pointA={machineState.status === 'HAS_A' || machineState.status === 'LOOPING'
@@ -323,6 +365,12 @@
 			pointB={machineState.status === 'HAS_B' || machineState.status === 'LOOPING'
 				? machineState.pointB
 				: null}
+			{zoomActive}
+			{t}
+			onDragA={handleDragA}
+			onDragB={handleDragB}
+			onZoomToggle={handleZoomToggle}
+			onSeek={handleSeek}
 		/>
 
 		<ABControls
