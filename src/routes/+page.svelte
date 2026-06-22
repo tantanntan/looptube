@@ -25,7 +25,7 @@
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
-	const t = createTranslator(data.locale);
+	const t = $derived(createTranslator(data.locale));
 
 	// Core domain objects — fake adapters for SSR safety; real adapters set on mount
 	const machine = new ABLoopStateMachine();
