@@ -1,0 +1,43 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"error": {
+		"not_found": "Video not found or unavailable.",
+		"not_embeddable": "This video cannot be embedded.",
+		"invalid_url": "Please enter a valid YouTube URL or video ID.",
+		"load_failed": "Failed to load video. Please try again."
+	},
+	"player": {
+		"url_placeholder": "Paste a YouTube URL or video ID",
+		"load": "Load",
+		"play": "Play",
+		"pause": "Pause"
+	},
+	"loop": {
+		"set_a": "Set A",
+		"set_b": "Set B",
+		"clear_a": "Clear A",
+		"clear_b": "Clear B",
+		"clear_all": "Clear Loop",
+		"point_a": "Point A",
+		"point_b": "Point B",
+		"not_set": "not set"
+	},
+	"playback": {
+		"speed": "Speed",
+		"loop_count": "Loop Count",
+		"infinite": "Infinite",
+		"times": "times"
+	},
+	"segment": {
+		"save": "Save",
+		"load": "Load",
+		"delete": "Delete",
+		"name_placeholder": "Segment name (e.g. Chorus bar 4)",
+		"empty": "No saved segments for this video."
+	},
+	"share": {
+		"button": "Share",
+		"copied": "Link copied to clipboard!",
+		"loop_clamped": "Loop points were adjusted to fit the video duration."
+	}
+}

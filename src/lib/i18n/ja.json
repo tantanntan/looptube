@@ -1,0 +1,43 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"error": {
+		"not_found": "動画が見つからないか、利用できません。",
+		"not_embeddable": "この動画は埋め込みが許可されていません。",
+		"invalid_url": "有効なYouTube URLまたは動画IDを入力してください。",
+		"load_failed": "動画の読み込みに失敗しました。もう一度お試しください。"
+	},
+	"player": {
+		"url_placeholder": "YouTube URLまたは動画IDを貼り付けてください",
+		"load": "読み込む",
+		"play": "再生",
+		"pause": "一時停止"
+	},
+	"loop": {
+		"set_a": "A点をセット",
+		"set_b": "B点をセット",
+		"clear_a": "A点をクリア",
+		"clear_b": "B点をクリア",
+		"clear_all": "ループをクリア",
+		"point_a": "A点",
+		"point_b": "B点",
+		"not_set": "未設定"
+	},
+	"playback": {
+		"speed": "再生速度",
+		"loop_count": "ループ回数",
+		"infinite": "無限",
+		"times": "回"
+	},
+	"segment": {
+		"save": "保存",
+		"load": "読み込み",
+		"delete": "削除",
+		"name_placeholder": "セグメント名（例：サビ 4小節目）",
+		"empty": "この動画の保存済みセグメントはありません。"
+	},
+	"share": {
+		"button": "共有",
+		"copied": "リンクをクリップボードにコピーしました！",
+		"loop_clamped": "ループポイントが動画の長さに合わせて調整されました。"
+	}
+}

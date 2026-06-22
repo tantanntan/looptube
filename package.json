@@ -1,0 +1,39 @@
+{
+  "name": "looptube",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "lint": "eslint .",
+    "test:unit": "vitest run tests/unit --passWithNoTests",
+    "test:unit:watch": "vitest tests/unit",
+    "test:integration": "vitest run tests/integration --passWithNoTests",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.1",
+    "@inlang/paraglide-sveltekit": "^0.16.1",
+    "@playwright/test": "^1.49.1",
+    "@sveltejs/adapter-auto": "^3.3.1",
+    "@sveltejs/kit": "^2.8.4",
+    "@sveltejs/vite-plugin-svelte": "^4.0.4",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/svelte": "^5.2.4",
+    "@types/youtube": "^0.3.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "eslint": "^9.14.0",
+    "eslint-plugin-boundaries": "^5.0.1",
+    "jsdom": "^29.1.1",
+    "svelte": "^5.19.0",
+    "svelte-check": "^4.1.1",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.17.0",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8"
+  }
+}

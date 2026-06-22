@@ -1,50 +1,245 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!-- SYNC_IMPACT_REPORT
+Version change: 1.0.0 → 1.1.0
+Modified principles:
+  - IV. Pure Domain Logic: removed React-specific language; replaced with Svelte
+  - V. StoragePort Abstraction: expanded to cover DB adapter + localStorage fallback pattern
+  - VI. Dependency Injection: added explicit TimerPort and RouterPort named ports
+  - VIII. Coverage Gate: added ABLoopStateMachine and SegmentRepository by canonical name
+Added sections:
+  - Tech Stack (non-negotiable)
+  - Design Principles
+  - API & Data Persistence
+  - Dependency Boundary diagram added to Boundary Contracts
+Removed sections: None
+Templates requiring updates:
+  ✅ .specify/templates/plan-template.md — Constitution Check section is generic; no change needed
+  ✅ .specify/templates/spec-template.md — Technology-agnostic; no change needed
+  ✅ .specify/templates/tasks-template.md — Test-first ordering already enforced; no change needed
+Deferred TODOs: None
+-->
+
+# LoopTube Constitution
+
+## Tech Stack
+
+The following technology choices are **non-negotiable** for this project:
+
+| Layer | Choice |
+|---|---|
+| Frontend + Backend | SvelteKit (App Router, `+server.ts` API routes, Server Actions) |
+| Language | TypeScript — mandatory across all layers, strict mode |
+| Unit / Integration testing | Vitest (Node environment) |
+| E2E testing | Playwright |
+| Package manager | npm or pnpm |
+
+No alternative frameworks, runtimes, or languages may be introduced without amending this
+constitution. TypeScript `strict` mode MUST be enabled in `tsconfig.json`.
+
+## Design Principles
+
+The following product-level principles constrain all UI and feature decisions:
+
+- **Mobile-first**: All UI MUST be designed and tested for mobile viewports first.
+  Desktop layouts are progressive enhancements.
+- **i18n-ready**: All user-facing strings MUST be externalised into locale files
+  from day one. Japanese (ja) and English (en) are the two supported locales.
+- **YouTube IFrame Player API is the only permitted playback method**: No alternative
+  video player SDKs, `<video>` element hacks, or third-party wrappers may be used.
+  The IFrame API MUST be accessed exclusively through the `VideoPlayerPort` abstraction
+  defined in Principle III.
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Test-Driven Development (TDD)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+All feature development MUST follow the Red-Green-Refactor cycle:
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- Write a failing test that captures the intended behavior **before** writing any
+  implementation code.
+- Implement the minimum code required to make the test pass.
+- Refactor to improve clarity and structure while keeping all tests green.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+No implementation code may be written without a corresponding failing test committed first.
+This constraint applies to all layers: domain logic, port adapters, SvelteKit routes, and
+Svelte UI components.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Harness Engineering
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Every module MUST be independently testable in isolation—without a running browser,
+YouTube IFrame API, database, or network connection.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+Harness Engineering is a first-class engineering concern, not an afterthought. When a module
+cannot be tested in isolation, that is a design defect that MUST be remedied before the
+feature is considered complete.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### III. VideoPlayerPort Abstraction (NON-NEGOTIABLE)
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+All interactions with the YouTube IFrame Player API MUST be routed through a
+`VideoPlayerPort` interface (or equivalent named abstraction boundary).
+
+- Test environments MUST inject a `FakeVideoPlayer` (or stub) that satisfies `VideoPlayerPort`.
+- Production environments MUST inject the real `YouTubePlayerAdapter`.
+- No business-logic module may import or reference the YouTube IFrame Player API SDK directly.
+
+Violation of this boundary is a build-blocking defect with no exceptions.
+
+### IV. Pure Domain Logic
+
+The A-B loop state machine (`ABLoopStateMachine`), polling logic, seek logic, and all
+related domain algorithms MUST live in pure, framework-agnostic TypeScript modules with the
+following hard constraints:
+
+- No DOM API usage (`document`, `window`, `HTMLElement`, or any browser global).
+- No Svelte stores, components, lifecycle hooks, or context dependencies.
+- No SvelteKit-specific APIs (`page`, `goto`, `invalidate`, etc.).
+- No direct imports of browser-only globals or environment-specific APIs.
+
+These modules MUST be fully unit-testable with Vitest in a standard Node.js environment
+without jsdom, happy-dom, or any browser runtime.
+
+### V. StoragePort Abstraction
+
+All persistence access MUST be routed through a `StoragePort` interface. The two
+production implementations are:
+
+- **`DatabaseStorageAdapter`**: Used for authenticated users; persists segments
+  server-side via SvelteKit API routes.
+- **`LocalStorageAdapter`**: Used for unauthenticated users; persists segments
+  client-side in `localStorage`.
+
+Test environments MUST inject an `InMemoryStorageAdapter` that satisfies `StoragePort`.
+Business-logic modules MUST NOT reference `window.localStorage`, any database client,
+or any SvelteKit server utility directly.
+
+The `StoragePort` interface MUST be location-agnostic: it MUST NOT expose whether
+storage is local or remote.
+
+### VI. Dependency Injection
+
+All side-effectful boundaries MUST be passed as explicit constructor or function-parameter
+dependencies—never imported directly inside business logic modules. The four named port
+boundaries are:
+
+| Port | Replaces |
+|---|---|
+| `VideoPlayerPort` | YouTube IFrame Player API |
+| `StoragePort` | Database (SvelteKit server) + `localStorage` fallback |
+| `TimerPort` | `setInterval`, `clearInterval`, `setTimeout` |
+| `RouterPort` | SvelteKit `goto`, `page` store, URL search params |
+
+The dependency graph MUST flow inward: domain logic ← port adapters ← framework layer.
+Dependency injection is the **only** permitted mechanism for connecting domain logic to
+platform capabilities.
+
+### VII. Test Runner & CI Enforcement
+
+- **Unit and integration tests**: Vitest (Node environment; no browser required).
+- **End-to-end tests**: Playwright.
+
+CI MUST enforce execution in this strict sequential order:
+
+1. Unit tests
+2. Integration tests
+3. E2E tests
+
+A CI stage MUST NOT advance if any preceding stage contains failures. Flaky tests MUST be
+fixed or explicitly quarantined with a tracked issue; they MUST NOT be silently skipped.
+
+### VIII. Coverage Gate
+
+A feature is NOT considered implemented until both conditions are met:
+
+1. All tests in the feature's test suite pass with zero failures.
+2. Code coverage of core loop logic reaches **100%**. Core loop logic is defined as:
+   - `ABLoopStateMachine` — all state transitions and guard conditions
+   - `SegmentRepository` — read, write, delete operations via `StoragePort`
+   - URL serialization and deserialization of loop parameters
+
+Coverage MUST be measured by Vitest's built-in coverage reporter (`@vitest/coverage-v8` or
+equivalent). CI MUST fail and block merge if this gate is not met.
+
+## API & Data Persistence
+
+- SvelteKit `+server.ts` routes serve as the sole backend API layer.
+- Segment data is persisted **server-side in a database** for authenticated users,
+  and **client-side in `localStorage`** for unauthenticated users.
+- Authentication MUST be implemented via OAuth. Google OAuth is the recommended
+  primary provider.
+- All `+server.ts` API endpoint handlers MUST have integration tests that run against
+  a **real test database**. Mocking the database layer in integration tests is prohibited.
+- The test database MUST be provisioned in CI via a Docker container or equivalent
+  disposable mechanism.
+
+## Boundary Contracts
+
+All port interfaces (`VideoPlayerPort`, `StoragePort`, `TimerPort`, `RouterPort`) MUST be
+defined in a dedicated `src/lib/ports/` directory and treated as the public API contract
+of the domain layer. Adapter implementations MUST reside in `src/lib/adapters/`.
+
+**Dependency boundary (enforced by ESLint import rules)**:
+
+```
+┌──────────────────────────────────────────────────────┐
+│          UI Layer (Svelte components, +page.svelte)  │
+└───────────────────────┬──────────────────────────────┘
+                        │ injects ports
+┌───────────────────────▼──────────────────────────────┐
+│            Application Core (pure TypeScript)        │
+│   ABLoopStateMachine / SegmentRepository             │
+│   ← no DOM, no Svelte, no YouTube SDK, no DB client  │
+└──────────┬─────────────────────────┬─────────────────┘
+           │ VideoPlayerPort         │ StoragePort / TimerPort / RouterPort
+    [YouTubePlayerAdapter]    [DatabaseStorageAdapter / LocalStorageAdapter]
+    [FakeVideoPlayer (test)]  [InMemoryStorageAdapter (test)]
+```
+
+Any change to a port interface is a **breaking change** and MUST:
+
+1. Be documented in the project changelog.
+2. Trigger corresponding updates to all adapter implementations and their tests.
+3. Increment at minimum the MINOR version of the affected module (MAJOR if it removes
+   or renames an existing method).
+
+## Quality Gates
+
+The following gates MUST all pass before any feature branch can be merged to `main`:
+
+| Gate | Tool | Threshold |
+|---|---|---|
+| Unit tests | Vitest | 100% pass |
+| Integration tests | Vitest (real test DB) | 100% pass |
+| E2E tests | Playwright | 100% pass |
+| Core loop coverage | Vitest coverage | 100% |
+| TypeScript compilation | `tsc --noEmit` | 0 errors |
+| Lint + import boundary check | ESLint | 0 errors |
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all other development practices and guidelines for this project.
+When any conflict arises between this document and any other guideline, this constitution
+takes precedence.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Amendment procedure**:
+
+1. Propose the amendment as a pull request targeting `main`, modifying this file.
+2. The PR description MUST include a rationale explaining why the current principle is
+   insufficient or incorrect.
+3. Any amendment that weakens a testing or abstraction requirement MUST include explicit
+   justification and sign-off from the project maintainer.
+4. Upon merge, update `LAST_AMENDED_DATE` and increment `CONSTITUTION_VERSION`
+   per the versioning policy below.
+
+**Versioning policy** (semantic versioning):
+
+- MAJOR: A principle is removed or a non-negotiable constraint is relaxed.
+- MINOR: A new principle or section is added, or existing guidance is materially expanded.
+- PATCH: Clarifications, wording improvements, typo corrections, or non-semantic refinements.
+
+**Compliance review**: Every PR description MUST include a "Constitution Check" section
+confirming that no principles are violated, or explicitly documenting any approved temporary
+deviation (with a linked tracking issue for resolution).
+
+**Runtime guidance**: For day-to-day development workflow and agent-specific instructions,
+refer to `CLAUDE.md`.
+
+**Version**: 1.1.0 | **Ratified**: 2026-06-22 | **Last Amended**: 2026-06-22
