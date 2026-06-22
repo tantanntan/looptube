@@ -19,7 +19,13 @@
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import PlaybackControls from '$lib/components/PlaybackControls.svelte';
 	import SegmentList from '$lib/components/SegmentList.svelte';
+	import LoopTubeHeader from '$lib/components/LoopTubeHeader.svelte';
+	import { createTranslator } from '$lib/i18n/index.js';
 	import type { Segment } from '$lib/ports/StoragePort.js';
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
+	const t = createTranslator(data.locale);
 
 	// Core domain objects — fake adapters for SSR safety; real adapters set on mount
 	const machine = new ABLoopStateMachine();
@@ -290,8 +296,8 @@
 	<title>LoopTube — A-B Repeat Player</title>
 </svelte:head>
 
-<main>
-	<h1>LoopTube</h1>
+<main class="page-container">
+	<LoopTubeHeader />
 
 	<form onsubmit={(e) => { e.preventDefault(); handleLoad(); }} class="url-form">
 		<label for="url-input">YouTube URL or Video ID</label>
@@ -371,11 +377,12 @@
 </main>
 
 <style>
-	main {
-		max-width: 900px;
+	.page-container {
+		width: 100%;
+		max-width: 640px;
 		margin: 0 auto;
-		padding: 1rem;
-		font-family: system-ui, sans-serif;
+		padding: var(--space-4, 16px);
+		overflow-x: hidden;
 	}
 
 	.url-form {

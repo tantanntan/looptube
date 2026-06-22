@@ -1,0 +1,82 @@
+@font-face {
+	font-family: 'Barlow';
+	src: url('/fonts/barlow/barlow-semibold.woff2') format('woff2');
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Noto Sans JP';
+	src: url('/fonts/noto-sans-jp/noto-sans-jp-regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Roboto Mono';
+	src: url('/fonts/roboto-mono/roboto-mono-regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* Dark theme design tokens */
+:root {
+	--color-bg: #0f0f0f;
+	--color-surface: #1a1a1a;
+	--color-surface-raised: #242424;
+	--color-border: #2e2e2e;
+	--color-text: #f0f0f0;
+	--color-text-secondary: #a0a0a0;
+	--color-accent: #ff4444;
+	--color-accent-hover: #ff6666;
+	--color-point-a: #44aaff;
+	--color-point-b: #ffaa44;
+
+	/* Spacing scale */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-8: 32px;
+
+	/* Typography */
+	--font-body: 'Noto Sans JP', system-ui, sans-serif;
+	--font-mono: 'Roboto Mono', monospace;
+	--font-brand: 'Barlow', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html,
+body {
+	height: 100%;
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	font-family: var(--font-body);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Touch target minimum (WCAG 2.1 AA / FR-012) */
+button {
+	min-height: 44px;
+	min-width: 44px;
+	cursor: pointer;
+}
+
+/* Focus indicator (WCAG 2.1 AA / SC-006) */
+:focus-visible {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 2px;
+}
