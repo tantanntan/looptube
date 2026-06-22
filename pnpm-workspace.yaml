@@ -1,5 +1,9 @@
+packages:
+  - '.'
+
 onlyBuiltDependencies:
   - esbuild
   - "@playwright/test"
 allowBuilds:
   esbuild: true
+
