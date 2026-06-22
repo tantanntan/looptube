@@ -380,6 +380,7 @@
 			pointB={machineState.status === 'HAS_B' || machineState.status === 'LOOPING'
 				? machineState.pointB
 				: null}
+			{t}
 			onSetA={handleSetA}
 			onSetB={handleSetB}
 			onNudgeA={handleNudgeA}
