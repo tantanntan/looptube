@@ -41,4 +41,27 @@ describe('ABControls.svelte', () => {
 		await fireEvent.click(screen.getByRole('button', { name: /\+0\.1 A/i }));
 		expect(onNudgeA).toHaveBeenCalledWith(0.1);
 	});
+
+	// T026a: failing tests — require formatTime display and conditional Clear All (T026)
+	it('displays pointA in MM:SS.s format when set', () => {
+		const t = (key: string) => key;
+		render(ABControls, { pointA: 63.2, pointB: null, t });
+		// formatTime(63.2) = '01:03.2' — FAILS until T026 (currently shows '63.2 s')
+		expect(screen.getByText('01:03.2')).toBeTruthy();
+	});
+
+	it('displays em-dash placeholder when pointA is not set', () => {
+		const t = (key: string) => key;
+		render(ABControls, { pointA: null, pointB: null, t });
+		// contracts: show '—' when point not set — FAILS until T026 (currently 'not set')
+		const dashes = screen.getAllByText('—');
+		expect(dashes.length).toBeGreaterThanOrEqual(2);
+	});
+
+	it('hides Clear All button when both points are null', () => {
+		const t = (key: string) => key;
+		render(ABControls, { pointA: null, pointB: null, t });
+		// contracts: Clear All hidden when both points null — FAILS until T026 (currently always shown)
+		expect(screen.queryByRole('button', { name: /clear all/i })).toBeNull();
+	});
 });
