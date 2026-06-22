@@ -18,7 +18,7 @@
 	import ABControls from '$lib/components/ABControls.svelte';
 	import Timeline from '$lib/components/Timeline.svelte';
 	import PlaybackControls from '$lib/components/PlaybackControls.svelte';
-	import SegmentList from '$lib/components/SegmentList.svelte';
+	import LoopList from '$lib/components/LoopList.svelte';
 	import LoopTubeHeader from '$lib/components/LoopTubeHeader.svelte';
 	import { createTranslator } from '$lib/i18n/index.js';
 	import { computeZoomWindow } from '$lib/utils/timeline.js';
@@ -419,8 +419,9 @@
 			<p role="status">{shareToast}</p>
 		{/if}
 
-		<SegmentList
-			{segments}
+		<LoopList
+			loops={segments}
+			{t}
 			onLoad={handleLoadSegment}
 			onDelete={handleDeleteSegment}
 		/>
