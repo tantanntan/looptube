@@ -23,7 +23,7 @@ export function parseLocale(acceptLanguage: string): Locale {
 			return { lang, q, i };
 		})
 		.filter(({ lang }) => lang && lang !== '*')
-		.sort((a, b) => b.q - a.q || b.i - a.i);
+		.sort((a, b) => b.q - a.q || a.i - b.i);
 
 	for (const { lang } of tags) {
 		const primary = lang.split('-')[0];

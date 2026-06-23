@@ -248,7 +248,8 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 		const s = machine.getState();
 		let t = player.getCurrentTime();
 		if ((s.status === 'HAS_A' || s.status === 'LOOPING') && t <= s.pointA) {
-			t = s.pointA + 0.1;
+			t = Math.min(s.pointA + 0.1, duration);
+			if (t <= s.pointA) return;
 		}
 		machine.setB(t);
 		machineState = machine.getState();
