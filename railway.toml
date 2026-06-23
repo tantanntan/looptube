@@ -2,6 +2,7 @@
 [build]
 builder = "RAILPACK"
 buildEnvironment = "V3"
+buildCommand = "bun run build"
 
 [deploy]
 runtime = "V2"
