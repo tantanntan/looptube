@@ -15,7 +15,7 @@
 
 **Purpose**: 既存プロジェクトへの追加。プロジェクト初期化は不要。
 
-- [ ] T001 `src/routes/+page.svelte` の `normalizeVideoId` 関数の現在の実装を確認し、`YouTubeUrlParser.ts` への移行差分を把握する
+- [x] T001 `src/routes/+page.svelte` の `normalizeVideoId` 関数の現在の実装を確認し、`YouTubeUrlParser.ts` への移行差分を把握する
 
 ---
 
@@ -25,10 +25,10 @@
 
 **⚠️ CRITICAL**: この Phase が完了するまでユーザーストーリーの実装を開始しない
 
-- [ ] T002 [P] `src/lib/ports/HistoryPort.ts` を新規作成し `HistoryItem` 型と `HistoryPort` インターフェース（`getAll`, `replaceAll`, `remove`, `clear`）を定義する
-- [ ] T003 [P] `tests/unit/YouTubeUrlParser.test.ts` を新規作成し `extractVideoId`（watch?v=, youtu.be/, embed/, shorts/, 生 ID）と `buildThumbnailUrl` のテストを RED 状態で書く（`HistoryPort` に非依存、Phase 2 開始後すぐ着手可）
-- [ ] T004 [P] `src/lib/core/YouTubeUrlParser.ts` を新規作成し T003 のテストをすべて GREEN にする（T003 完了後）
-- [ ] T005 `src/lib/fakes/InMemoryHistoryAdapter.ts` を新規作成し `HistoryPort` のインメモリ実装を提供する（T002 完了後）
+- [x] T002 [P] `src/lib/ports/HistoryPort.ts` を新規作成し `HistoryItem` 型と `HistoryPort` インターフェース（`getAll`, `replaceAll`, `remove`, `clear`）を定義する
+- [x] T003 [P] `tests/unit/YouTubeUrlParser.test.ts` を新規作成し `extractVideoId`（watch?v=, youtu.be/, embed/, shorts/, 生 ID）と `buildThumbnailUrl` のテストを RED 状態で書く（`HistoryPort` に非依存、Phase 2 開始後すぐ着手可）
+- [x] T004 [P] `src/lib/core/YouTubeUrlParser.ts` を新規作成し T003 のテストをすべて GREEN にする（T003 完了後）
+- [x] T005 `src/lib/fakes/InMemoryHistoryAdapter.ts` を新規作成し `HistoryPort` のインメモリ実装を提供する（T002 完了後）
 
 **Checkpoint**: `bun run test:unit` を実行し T003 のテストがすべて GREEN になっていることを確認
 
@@ -42,14 +42,14 @@
 
 ### テストファースト → 実装（RED → GREEN）
 
-- [ ] T006 [P] [US1] `tests/unit/VideoHistoryRepository.test.ts` を新規作成し 重複排除（同 id を先頭へ移動）・50 件上限（最古削除）・`getAll()` の `addedAt` 降順ソートを `InMemoryHistoryAdapter` を使ってテストを RED 状態で書く（T002, T005 完了後）
-- [ ] T007 [P] [US1] `src/lib/core/VideoHistoryRepository.ts` を新規作成し T006 のテストをすべて GREEN にする（`add()` は `port.replaceAll()` で全件保存、T006 完了後）
-- [ ] T008 [P] [US1] `tests/unit/LocalHistoryAdapter.test.ts` を新規作成し localStorage read/write・JSON 破損時の空配列返却・`replaceAll` 失敗時の no-throw をテストを RED 状態で書く（T002 完了後）
-- [ ] T009 [P] [US1] `src/lib/adapters/LocalHistoryAdapter.ts` を新規作成し T008 のテストをすべて GREEN にする（キー: `looptube:history`、書き込み失敗はサイレント継続、T008 完了後）
+- [x] T006 [P] [US1] `tests/unit/VideoHistoryRepository.test.ts` を新規作成し 重複排除（同 id を先頭へ移動）・50 件上限（最古削除）・`getAll()` の `addedAt` 降順ソートを `InMemoryHistoryAdapter` を使ってテストを RED 状態で書く（T002, T005 完了後）
+- [x] T007 [P] [US1] `src/lib/core/VideoHistoryRepository.ts` を新規作成し T006 のテストをすべて GREEN にする（`add()` は `port.replaceAll()` で全件保存、T006 完了後）
+- [x] T008 [P] [US1] `tests/unit/LocalHistoryAdapter.test.ts` を新規作成し localStorage read/write・JSON 破損時の空配列返却・`replaceAll` 失敗時の no-throw をテストを RED 状態で書く（T002 完了後）
+- [x] T009 [P] [US1] `src/lib/adapters/LocalHistoryAdapter.ts` を新規作成し T008 のテストをすべて GREEN にする（キー: `looptube:history`、書き込み失敗はサイレント継続、T008 完了後）
 
 ### MVP 最低限統合
 
-- [ ] T010 [US1] `src/routes/+page.svelte` を変更し `VideoHistoryRepository`（`LocalHistoryAdapter` 使用）のインスタンス化と `handleLoad()` 成功後の `repository.add()` 呼び出しを追加する（UI なし・履歴追加のみ。`$state historyItems` の初期化も含む。T007, T009 完了後）
+- [x] T010 [US1] `src/routes/+page.svelte` を変更し `VideoHistoryRepository`（`LocalHistoryAdapter` 使用）のインスタンス化と `handleLoad()` 成功後の `repository.add()` 呼び出しを追加する（UI なし・履歴追加のみ。`$state historyItems` の初期化も含む。T007, T009 完了後）
 
 **Checkpoint**: `bun run test:unit` で全テスト GREEN。アプリを起動し動画ロード後に `localStorage['looptube:history']` に JSON が保存されること、リロード後も保持されることを手動確認
 
@@ -63,14 +63,14 @@
 
 ### i18n
 
-- [ ] T011 [P] [US2] `src/lib/i18n/ja.json` と `src/lib/i18n/en.json` に `history.*` キー（`button_label`, `drawer_title`, `empty`, `delete_label`）を既存の `createTranslator` 方式で追加する
+- [x] T011 [P] [US2] `src/lib/i18n/ja.json` と `src/lib/i18n/en.json` に `history.*` キー（`button_label`, `drawer_title`, `empty`, `delete_label`）を既存の `createTranslator` 方式で追加する
 
 ### 実装タスク
 
-- [ ] T012 [P] [US2] `src/lib/components/VideoHistoryItem.svelte` を新規作成しサムネイル・タイトル（空文字の場合は URL）・ゴミ箱アイコンボタンを表示する。Props: `item: HistoryItem`, `onSelect: (item: HistoryItem) => void`, `onDelete: (id: string) => void`（T002, T011 完了後、空 `<style></style>` ブロック必須）
-- [ ] T013 [P] [US2] `src/lib/components/VideoHistoryDrawer.svelte` を新規作成しオーバーレイ + ドロワー・`VideoHistoryItem` リスト・空状態メッセージを実装する。Props: `open: boolean`, `items: HistoryItem[]`, `onClose`, `onSelect`, `onDelete`（T011, T012 完了後、空 `<style></style>` ブロック必須）
-- [ ] T014 [P] [US2] `src/lib/components/LoopTubeHeader.svelte` を変更し履歴アイコンボタンを追加する。Props 追加: `onHistoryClick: () => void`（T011 完了後）
-- [ ] T015 [US2] `src/routes/+page.svelte` を変更し `$state historyOpen` の追加・`handleHistorySelect(item)`（URL セット + `handleLoad()`）・`handleHistoryDelete(id)`（`repository.remove()` → `historyItems` 更新）・`<VideoHistoryDrawer>` と `<LoopTubeHeader>` への props 接続を実装する（T010, T013, T014 完了後）
+- [x] T012 [P] [US2] `src/lib/components/VideoHistoryItem.svelte` を新規作成しサムネイル・タイトル（空文字の場合は URL）・ゴミ箱アイコンボタンを表示する。Props: `item: HistoryItem`, `onSelect: (item: HistoryItem) => void`, `onDelete: (id: string) => void`（T002, T011 完了後、空 `<style></style>` ブロック必須）
+- [x] T013 [P] [US2] `src/lib/components/VideoHistoryDrawer.svelte` を新規作成しオーバーレイ + ドロワー・`VideoHistoryItem` リスト・空状態メッセージを実装する。Props: `open: boolean`, `items: HistoryItem[]`, `onClose`, `onSelect`, `onDelete`（T011, T012 完了後、空 `<style></style>` ブロック必須）
+- [x] T014 [P] [US2] `src/lib/components/LoopTubeHeader.svelte` を変更し履歴アイコンボタンを追加する。Props 追加: `onHistoryClick: () => void`（T011 完了後）
+- [x] T015 [US2] `src/routes/+page.svelte` を変更し `$state historyOpen` の追加・`handleHistorySelect(item)`（URL セット + `handleLoad()`）・`handleHistoryDelete(id)`（`repository.remove()` → `historyItems` 更新）・`<VideoHistoryDrawer>` と `<LoopTubeHeader>` への props 接続を実装する（T010, T013, T014 完了後）
 
 **Checkpoint**: アプリを起動し全操作（履歴追加・ドロワー開閉・選択・削除・リロード後の保持）を手動確認
 
@@ -80,8 +80,8 @@
 
 **Purpose**: コード品質向上・`normalizeVideoId` の除去
 
-- [ ] T016 [P] `src/routes/+page.svelte` 内の `normalizeVideoId` 呼び出しを `YouTubeUrlParser.extractVideoId` に置き換え、元の関数定義を削除する（T004, T015 完了後）
-- [ ] T017 `bun run test:unit` を実行し全ユニットテストが通過することを最終確認する
+- [x] T016 [P] `src/routes/+page.svelte` 内の `normalizeVideoId` 呼び出しを `YouTubeUrlParser.extractVideoId` に置き換え、元の関数定義を削除する（T004, T015 完了後）
+- [x] T017 `bun run test:unit` を実行し全ユニットテストが通過することを最終確認する
 
 ---
 

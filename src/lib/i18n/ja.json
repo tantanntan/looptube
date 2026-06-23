@@ -51,5 +51,11 @@
 		"button": "共有",
 		"copied": "リンクをクリップボードにコピーしました！",
 		"loop_clamped": "ループポイントが動画の長さに合わせて調整されました。"
+	},
+	"history": {
+		"button_label": "履歴",
+		"drawer_title": "視聴履歴",
+		"empty": "履歴はまだありません",
+		"delete_label": "この動画を履歴から削除"
 	}
 }

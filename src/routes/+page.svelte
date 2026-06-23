@@ -5,6 +5,7 @@
 	import { ABLoopStateMachine } from '$lib/core/ABLoopStateMachine.js';
 	import { UrlSerializer } from '$lib/core/UrlSerializer.js';
 	import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
+	import { seekToPointA, seekToPointAIfPlaying } from '$lib/core/PlaybackAnchor.js';
 	import { KeyboardHandler } from '$lib/core/KeyboardHandler.js';
 	import { SegmentRepository } from '$lib/core/SegmentRepository.js';
 	import { FakeVideoPlayer } from '$lib/fakes/FakeVideoPlayer.js';
@@ -23,6 +24,11 @@
 	import { formatTimecode } from '$lib/utils/timeline.js';
 	import type { Segment } from '$lib/ports/StoragePort.js';
 	import type { PageData } from './$types';
+	import { VideoHistoryRepository } from '$lib/core/VideoHistoryRepository.js';
+	import { LocalHistoryAdapter } from '$lib/adapters/LocalHistoryAdapter.js';
+	import type { HistoryItem } from '$lib/ports/HistoryPort.js';
+	import VideoHistoryDrawer from '$lib/components/VideoHistoryDrawer.svelte';
+	import { extractVideoId } from '$lib/core/YouTubeUrlParser.js';
 
 	const FPS = 30;
 	const SEEK_SHORT_SECONDS = 2;
@@ -50,6 +56,9 @@
 	let segmentName = $state('');
 	let zoom = $state(1);
 	let videoReady = $state(false);
+	let historyRepository: VideoHistoryRepository | null = null;
+	let historyItems = $state<HistoryItem[]>([]);
+	let historyOpen = $state(false);
 	let spVideoOpen = $state(false);
 	let videoTitle = $state('');
 	let hasPlayedCurrentVideo = $state(false);
@@ -143,6 +152,8 @@
 	onMount(async () => {
 		document.addEventListener('keydown', handleKeydown);
 		repo = new SegmentRepository(new LocalStorageAdapter());
+		historyRepository = new VideoHistoryRepository(new LocalHistoryAdapter());
+		historyItems = await historyRepository.getAll();
 
 		// Read URL params
 		const vParam = $page.url.searchParams.get('v');
@@ -231,17 +242,8 @@
 		player.destroy();
 	});
 
-	function normalizeVideoId(input: string): string {
-		try {
-			const url = new URL(input);
-			return url.searchParams.get('v') ?? url.pathname.replace(/^\//, '');
-		} catch {
-			return input.trim();
-		}
-	}
-
 	async function handleLoad() {
-		const id = normalizeVideoId(urlInput);
+		const id = extractVideoId(urlInput);
 		if (!id) return;
 		lastSubmittedInput = urlInput;
 		videoId = id;
@@ -256,11 +258,29 @@
 		url.searchParams.set('v', id);
 		history.replaceState(history.state, '', url.toString());
 		await loadSegments();
+		if (historyRepository) {
+			const item = historyRepository.buildHistoryItem(id, urlInput, videoTitle);
+			await historyRepository.add(item);
+			historyItems = await historyRepository.getAll();
+		}
+	}
+
+	function handleHistorySelect(item: HistoryItem) {
+		urlInput = item.url;
+		historyOpen = false;
+		handleLoad();
+	}
+
+	async function handleHistoryDelete(id: string) {
+		if (!historyRepository) return;
+		await historyRepository.remove(id);
+		historyItems = await historyRepository.getAll();
 	}
 
 	function handleSetA() {
-		machine.setA(player.getCurrentTime());
+		const result = machine.setA(player.getCurrentTime());
 		machineState = machine.getState();
+		if (result.ok) seekToPointAIfPlaying(machineState, player, playing);
 	}
 
 	function handleSetB() {
@@ -278,6 +298,7 @@
 		if (playing) {
 			player.pause();
 		} else {
+			seekToPointA(machine.getState(), player);
 			hasPlayedCurrentVideo = true;
 			player.play();
 		}
@@ -286,8 +307,9 @@
 	function handleNudgeA(delta: number) {
 		const s = machine.getState();
 		if (s.status === 'HAS_A' || s.status === 'LOOPING') {
-			machine.setA(Math.max(0, s.pointA + delta));
+			const result = machine.setA(Math.max(0, s.pointA + delta));
 			machineState = machine.getState();
+			if (result.ok) seekToPointAIfPlaying(machineState, player, playing);
 		}
 	}
 
@@ -325,8 +347,9 @@
 	}
 
 	function handleDragA(seconds: number) {
-		machine.setA(seconds);
+		const result = machine.setA(seconds);
 		machineState = machine.getState();
+		if (result.ok) seekToPointAIfPlaying(machineState, player, playing);
 	}
 
 	function handleDragB(seconds: number) {
@@ -342,12 +365,18 @@
 		const s = machine.getState();
 		if (s.status === 'LOOPING') {
 			if (s.lastSetPoint === 'A') {
-				machine.setA(Math.max(0, s.pointA + delta));
+				const result = machine.setA(Math.max(0, s.pointA + delta));
+				machineState = machine.getState();
+				if (result.ok) seekToPointAIfPlaying(machineState, player, playing);
+				return;
 			} else {
 				machine.setB(Math.max(0, s.pointB + delta));
 			}
 		} else if (s.status === 'HAS_A') {
-			machine.setA(Math.max(0, s.pointA + delta));
+			const result = machine.setA(Math.max(0, s.pointA + delta));
+			machineState = machine.getState();
+			if (result.ok) seekToPointAIfPlaying(machineState, player, playing);
+			return;
 		} else if (s.status === 'HAS_B') {
 			machine.setB(Math.max(0, s.pointB + delta));
 		}
@@ -385,6 +414,8 @@
 		submitDisabled={!!lastSubmittedInput && urlInput === lastSubmittedInput}
 		onUrlInput={(v) => (urlInput = v)}
 		onUrlSubmit={handleLoad}
+		locale={data.locale}
+		onHistoryClick={() => (historyOpen = true)}
 	/>
 
 	<!-- Always rendered so div#yt-player exists before YouTube IFrame API init -->
@@ -518,6 +549,14 @@
 			/>
 		</div>
 	</div>
+	<VideoHistoryDrawer
+		open={historyOpen}
+		items={historyItems}
+		locale={data.locale}
+		onClose={() => (historyOpen = false)}
+		onSelect={handleHistorySelect}
+		onDelete={handleHistoryDelete}
+	/>
 </main>
 
 <style>
