@@ -2,6 +2,7 @@
 	type Props = {
 		urlInput?: string;
 		isPlaying?: boolean;
+		submitDisabled?: boolean;
 		onUrlInput?: (val: string) => void;
 		onUrlSubmit?: () => void;
 	};
@@ -9,6 +10,7 @@
 	let {
 		urlInput = '',
 		isPlaying = false,
+		submitDisabled = false,
 		onUrlInput,
 		onUrlSubmit
 	}: Props = $props();
@@ -54,7 +56,7 @@
 				>×</button>
 			{/if}
 		</div>
-		<button type="submit" class="lt-url-submit">読み込む</button>
+		<button type="submit" class="lt-url-submit" disabled={submitDisabled}>読み込む</button>
 	</form>
 </header>
 
@@ -224,8 +226,13 @@
 		cursor: pointer;
 	}
 
-	.lt-url-submit:hover {
+	.lt-url-submit:hover:not(:disabled) {
 		background: var(--color-accent-soft);
+	}
+
+	.lt-url-submit:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 
 	@media (max-width: 700px) {

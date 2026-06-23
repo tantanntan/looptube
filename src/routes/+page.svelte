@@ -39,6 +39,7 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 	// Reactive state
 	let videoId = $state('');
 	let urlInput = $state('');
+	let lastSubmittedInput = $state('');
 	let currentTime = $state(0);
 	let duration = $state(0);
 	let machineState = $state(machine.getState());
@@ -232,6 +233,7 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 	async function handleLoad() {
 		const id = normalizeVideoId(urlInput);
 		if (!id) return;
+		lastSubmittedInput = urlInput;
 		videoId = id;
 		videoReady = false;
 		machine.clearAll();
@@ -372,6 +374,7 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 	<LoopTubeHeader
 		{urlInput}
 		isPlaying={playing}
+		submitDisabled={!!lastSubmittedInput && urlInput === lastSubmittedInput}
 		onUrlInput={(v) => (urlInput = v)}
 		onUrlSubmit={handleLoad}
 	/>
@@ -496,7 +499,7 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 		overflow-x: hidden;
 	}
 
-	.lt-work-hidden {
+	#lt-work.lt-work-hidden {
 		display: none;
 	}
 
