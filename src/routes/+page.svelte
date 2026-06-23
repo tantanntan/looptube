@@ -371,7 +371,7 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 	/>
 
 	<!-- Always rendered so div#yt-player exists before YouTube IFrame API init -->
-	<div id="lt-work">
+	<div id="lt-work" class:lt-work-hidden={!videoId}>
 		<div id="lt-video" class:sp-open={spVideoOpen}>
 			<button
 				type="button"
@@ -488,6 +488,10 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 		margin: 0 auto;
 		padding: var(--space-4);
 		overflow-x: hidden;
+	}
+
+	.lt-work-hidden {
+		display: none;
 	}
 
 	#lt-work {
