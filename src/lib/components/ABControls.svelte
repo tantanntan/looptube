@@ -74,27 +74,30 @@
 		class="ab-card ab-card-a"
 		class:ab-card-active={activePoint === 'a'}
 		class:ab-card-set={pointA !== null}
+		class:ab-card-compact={pointA === null}
 	>
-		<div class="ab-card-label point-label-a">IN</div>
-		<div class="ab-timecode">{fmt(pointA)}</div>
-		<div
-			class="ab-loupe"
-			class:ab-loupe-active={loupeDragging === 'a'}
-			bind:this={loupeAEl}
-			role="slider"
-			aria-label="Point A loupe scrubber"
-			aria-valuenow={pointA ?? 0}
-			aria-valuemin={0}
-			aria-valuemax={9999}
-			tabindex={pointA !== null ? 0 : -1}
-			onpointerdown={(e) => startLoupe(e, 'a')}
-			onpointermove={moveLoupe}
-			onpointerup={endLoupe}
-			onpointercancel={endLoupe}
-		>
-			<div class="ab-loupe-track"><div class="ab-loupe-cursor"></div></div>
-			<span class="ab-loupe-hint">← ドラッグ →</span>
-		</div>
+		{#if pointA !== null}
+			<div class="ab-card-label point-label-a">IN</div>
+			<div class="ab-timecode">{fmt(pointA)}</div>
+			<div
+				class="ab-loupe"
+				class:ab-loupe-active={loupeDragging === 'a'}
+				bind:this={loupeAEl}
+				role="slider"
+				aria-label="Point A loupe scrubber"
+				aria-valuenow={pointA}
+				aria-valuemin={0}
+				aria-valuemax={9999}
+				tabindex={0}
+				onpointerdown={(e) => startLoupe(e, 'a')}
+				onpointermove={moveLoupe}
+				onpointerup={endLoupe}
+				onpointercancel={endLoupe}
+			>
+				<div class="ab-loupe-track"><div class="ab-loupe-cursor"></div></div>
+				<span class="ab-loupe-hint">← ドラッグ →</span>
+			</div>
+		{/if}
 		<div class="ab-card-actions">
 			<button type="button" class="ab-btn-set ab-btn-set-a" onclick={onSetA}>Set A</button>
 			{#if pointA !== null}
@@ -110,27 +113,30 @@
 		class="ab-card ab-card-b"
 		class:ab-card-active={activePoint === 'b'}
 		class:ab-card-set={pointB !== null}
+		class:ab-card-compact={pointB === null}
 	>
-		<div class="ab-card-label point-label-b">OUT</div>
-		<div class="ab-timecode">{fmt(pointB)}</div>
-		<div
-			class="ab-loupe"
-			class:ab-loupe-active={loupeDragging === 'b'}
-			bind:this={loupeBEl}
-			role="slider"
-			aria-label="Point B loupe scrubber"
-			aria-valuenow={pointB ?? 0}
-			aria-valuemin={0}
-			aria-valuemax={9999}
-			tabindex={pointB !== null ? 0 : -1}
-			onpointerdown={(e) => startLoupe(e, 'b')}
-			onpointermove={moveLoupe}
-			onpointerup={endLoupe}
-			onpointercancel={endLoupe}
-		>
-			<div class="ab-loupe-track"><div class="ab-loupe-cursor"></div></div>
-			<span class="ab-loupe-hint">← ドラッグ →</span>
-		</div>
+		{#if pointB !== null}
+			<div class="ab-card-label point-label-b">OUT</div>
+			<div class="ab-timecode">{fmt(pointB)}</div>
+			<div
+				class="ab-loupe"
+				class:ab-loupe-active={loupeDragging === 'b'}
+				bind:this={loupeBEl}
+				role="slider"
+				aria-label="Point B loupe scrubber"
+				aria-valuenow={pointB}
+				aria-valuemin={0}
+				aria-valuemax={9999}
+				tabindex={0}
+				onpointerdown={(e) => startLoupe(e, 'b')}
+				onpointermove={moveLoupe}
+				onpointerup={endLoupe}
+				onpointercancel={endLoupe}
+			>
+				<div class="ab-loupe-track"><div class="ab-loupe-cursor"></div></div>
+				<span class="ab-loupe-hint">← ドラッグ →</span>
+			</div>
+		{/if}
 		<div class="ab-card-actions">
 			<button type="button" class="ab-btn-set ab-btn-set-b" onclick={onSetB}>Set B</button>
 			{#if pointB !== null}
@@ -165,6 +171,12 @@
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: 8px;
+	}
+
+	.ab-card-compact {
+		padding: 0;
+		background: transparent;
+		border-color: transparent;
 	}
 
 	.ab-card-active.ab-card-a {
