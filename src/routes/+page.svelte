@@ -48,6 +48,7 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 	let segments = $state<Segment[]>([]);
 	let segmentName = $state('');
 	let zoom = $state(1);
+	let videoReady = $state(false);
 	let spVideoOpen = $state(false);
 	let videoTitle = $state('');
 
@@ -169,6 +170,9 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 				const title = ytPlayer.getVideoTitle();
 				if (title) videoTitle = title;
 			}
+			if (state === 'BUFFERING' || state === 'PLAYING') {
+				videoReady = true;
+			}
 			if (!shareParamsApplied && (state === 'BUFFERING' || state === 'PLAYING')) {
 				if (shareResult.ok && ytPlayer.getDuration() > 0) {
 					shareParamsApplied = true;
@@ -229,6 +233,7 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 		const id = normalizeVideoId(urlInput);
 		if (!id) return;
 		videoId = id;
+		videoReady = false;
 		machine.clearAll();
 		machineState = machine.getState();
 		// Explicitly load the video; don't rely solely on the $effect in VideoPlayer
@@ -371,7 +376,7 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 	/>
 
 	<!-- Always rendered so div#yt-player exists before YouTube IFrame API init -->
-	<div id="lt-work" class:lt-work-hidden={!videoId}>
+	<div id="lt-work" class:lt-work-hidden={!videoReady}>
 		<div id="lt-video" class:sp-open={spVideoOpen}>
 			<button
 				type="button"
