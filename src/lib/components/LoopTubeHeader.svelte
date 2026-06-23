@@ -56,7 +56,12 @@
 				>×</button>
 			{/if}
 		</div>
-		<button type="submit" class="lt-url-submit" disabled={submitDisabled}>読み込む</button>
+		<button
+			type="submit"
+			class="lt-url-submit"
+			class:lt-url-submit-active={!submitDisabled}
+			disabled={submitDisabled}
+		><span class="lt-url-submit-label">読み込む</span></button>
 	</form>
 </header>
 
@@ -210,11 +215,14 @@
 	}
 
 	.lt-url-submit {
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
 		padding: 0 var(--space-4);
 		background: var(--color-accent);
 		color: var(--color-text);
-		border: none;
-		border-radius: 6px;
+		border: 1px solid var(--color-accent);
+		border-radius: 4px;
 		font-family: var(--font-brand);
 		font-size: 0.875rem;
 		font-weight: 600;
@@ -226,13 +234,61 @@
 		cursor: pointer;
 	}
 
+	.lt-url-submit::before {
+		content: '';
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		z-index: 0;
+		width: 180%;
+		aspect-ratio: 1;
+		border-radius: 999px;
+		background: radial-gradient(circle, var(--color-accent) 0%, transparent 62%);
+		opacity: 0;
+		filter: brightness(70%);
+		transform: translate(-50%, -50%) scale(0.22);
+		transform-origin: center;
+		pointer-events: none;
+	}
+
+	.lt-url-submit-active::before {
+		animation: url-submit-glow 2500ms ease-in-out infinite;
+	}
+
+	.lt-url-submit-label {
+		position: relative;
+		z-index: 1;
+	}
+
+	@keyframes url-submit-glow {
+		0%,
+		100% {
+			opacity: 0.16;
+			filter: brightness(70%);
+			transform: translate(-50%, -50%) scale(0.22);
+		}
+
+		50% {
+			opacity: 0.72;
+			filter: brightness(100%);
+			transform: translate(-50%, -50%) scale(1);
+		}
+	}
+
 	.lt-url-submit:hover:not(:disabled) {
-		background: var(--color-accent-soft);
+		background: var(--color-accent);
+		color: var(--color-text);
 	}
 
 	.lt-url-submit:disabled {
 		opacity: 0.4;
 		cursor: not-allowed;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.lt-url-submit-active::before {
+			animation: none;
+		}
 	}
 
 	@media (max-width: 700px) {
