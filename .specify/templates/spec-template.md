@@ -8,6 +8,16 @@
 
 **Input**: User description: "$ARGUMENTS"
 
+<!--
+  SPEC CONSISTENCY GUARD
+  - Keep this artifact focused on WHAT/WHY. If an implementation detail is unavoidable
+    because it is a product constraint, explicitly mark it as a constraint/assumption.
+  - For every data value users rely on, specify: identity/uniqueness, stored/displayed
+    form, raw vs normalized behavior, nullability, fallback behavior, and lifecycle.
+  - When later plan/data-model/tasks artifacts are created, these decisions must remain
+    aligned. Do not leave contradictory fallback, storage, or normalization wording.
+-->
+
 ## User Scenarios & Testing *(mandatory)*
 
 <!--
@@ -102,6 +112,15 @@
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
+
+<!--
+  For each key entity field, capture enough behavior to prevent downstream drift:
+  - source of the value (user input, generated, external service, derived)
+  - canonical identity/deduplication key, if any
+  - whether the stored value is raw input or normalized output
+  - nullable vs non-nullable, and exact fallback behavior when missing/unavailable
+  - ordering/lifecycle rules if the field affects display or retention
+-->
 
 ## Success Criteria *(mandatory)*
 

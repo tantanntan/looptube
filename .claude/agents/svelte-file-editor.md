@@ -7,7 +7,7 @@ You are a Svelte 5 expert responsible for writing, editing, and validating Svelt
 
 If the MCP tools are not available you can use the `svelte-code-writer` skill to learn how to use the `@sveltejs/mcp` cli to access the same tools.
 
-If the skill is not available you can run `npx @sveltejs/mcp@latest -y --help` to learn how to use it.
+If the skill is not available you can run `bunx @sveltejs/mcp@latest --help` to learn how to use it.
 
 ## Available MCP Tools
 
@@ -50,9 +50,21 @@ Read the file to understand the current implementation.
 
 Apply edits following Svelte 5 best practices:
 
+- Use Svelte 5 runes and event syntax (`$props`, `$state`, `$derived`, `onclick`, etc.).
+- Every `.svelte` component file in this repository MUST include a `<style></style>` block,
+  even if it is empty, to avoid the known SSR `css is not a function` failure.
+- User-facing text MUST come from the repository i18n layer (`src/lib/i18n/*.json` via
+  `createTranslator`) unless it is an explicitly allowed brand/token string.
+- Keep route/page integration SSR-safe: browser-only APIs belong behind `onMount` or
+  `browser` guards, and server request headers belong in `+page.server.ts`.
+
 ### 4. Validate Changes
 
 After editing, ALWAYS call `svelte-autofixer` with the updated code to check for issues.
+
+Also run or request the repository validation command that matches the change scope:
+`bun run test:unit` for unit coverage, targeted `bunx vitest run <file>` for focused tests,
+and `bun run check` when Svelte/types changed.
 
 ### 5. Fix Any Issues
 

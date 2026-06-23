@@ -32,6 +32,13 @@
 - [ ] CHK005 Item with specific criteria
 - [ ] CHK006 Final item in this category
 
+## Cross-Artifact Consistency *(include for spec/plan/tasks reviews)*
+
+- [ ] CHK007 Are interface names, method names, and responsibility boundaries consistent across spec.md, plan.md, data-model.md, research.md, and tasks.md?
+- [ ] CHK008 Are data field types, nullability, fallback behavior, and raw-vs-normalized storage rules consistent across all artifacts?
+- [ ] CHK009 Do task dependencies and `[P]` markers match the actual artifact/file dependencies?
+- [ ] CHK010 Are all constitution-required practices represented in plan.md and tasks.md without unexplained exceptions?
+
 ## Notes
 
 - Check items off as completed: `[x]`

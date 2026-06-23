@@ -7,12 +7,13 @@ description: CLI tools for Svelte 5 documentation lookup and code analysis. MUST
 
 ## CLI Tools
 
-You have access to `@sveltejs/mcp` CLI for Svelte-specific assistance. Use these commands via `npx`:
+You have access to `@sveltejs/mcp` CLI for Svelte-specific assistance. This repository uses
+Bun as the primary package manager, so prefer `bunx`:
 
 ### List Documentation Sections
 
 ```bash
-npx @sveltejs/mcp list-sections
+bunx @sveltejs/mcp list-sections
 ```
 
 Lists all available Svelte 5 and SvelteKit documentation sections with titles and paths.
@@ -20,7 +21,7 @@ Lists all available Svelte 5 and SvelteKit documentation sections with titles an
 ### Get Documentation
 
 ```bash
-npx @sveltejs/mcp get-documentation "<section1>,<section2>,..."
+bunx @sveltejs/mcp get-documentation "<section1>,<section2>,..."
 ```
 
 Retrieves full documentation for specified sections. Use after `list-sections` to fetch relevant docs.
@@ -28,13 +29,13 @@ Retrieves full documentation for specified sections. Use after `list-sections` t
 **Example:**
 
 ```bash
-npx @sveltejs/mcp get-documentation "$state,$derived,$effect"
+bunx @sveltejs/mcp get-documentation "$state,$derived,$effect"
 ```
 
 ### Svelte Autofixer
 
 ```bash
-npx @sveltejs/mcp svelte-autofixer "<code_or_path>" [options]
+bunx @sveltejs/mcp svelte-autofixer "<code_or_path>" [options]
 ```
 
 Analyzes Svelte code and suggests fixes for common issues.
@@ -48,13 +49,13 @@ Analyzes Svelte code and suggests fixes for common issues.
 
 ```bash
 # Analyze inline code (escape $ as \$)
-npx @sveltejs/mcp svelte-autofixer '<script>let count = \$state(0);</script>'
+bunx @sveltejs/mcp svelte-autofixer '<script>let count = \$state(0);</script>'
 
 # Analyze a file
-npx @sveltejs/mcp svelte-autofixer ./src/lib/Component.svelte
+bunx @sveltejs/mcp svelte-autofixer ./src/lib/Component.svelte
 
 # Target Svelte 4
-npx @sveltejs/mcp svelte-autofixer ./Component.svelte --svelte-version 4
+bunx @sveltejs/mcp svelte-autofixer ./Component.svelte --svelte-version 4
 ```
 
 **Important:** When passing code with runes (`$state`, `$derived`, etc.) via the terminal, escape the `$` character as `\$` to prevent shell variable substitution.
@@ -64,3 +65,12 @@ npx @sveltejs/mcp svelte-autofixer ./Component.svelte --svelte-version 4
 1. **Uncertain about syntax?** Run `list-sections` then `get-documentation` for relevant topics
 2. **Reviewing/debugging?** Run `svelte-autofixer` on the code to detect issues
 3. **Always validate** - Run `svelte-autofixer` before finalizing any Svelte component
+
+## LoopTube Repository Requirements
+
+- Every `.svelte` component file MUST include a `<style></style>` block, even when empty.
+- User-facing strings MUST be externalized to `src/lib/i18n/en.json` and
+  `src/lib/i18n/ja.json` and accessed through `createTranslator`, unless explicitly
+  exempted as a brand/token string.
+- Validate changed Svelte/type code with `bun run check` and relevant unit tests
+  (`bun run test:unit` or targeted `bunx vitest run <file>`).

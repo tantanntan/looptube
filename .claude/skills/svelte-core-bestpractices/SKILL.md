@@ -3,6 +3,21 @@ name: svelte-core-bestpractices
 description: Guidance on writing fast, robust, modern Svelte code. Load this skill whenever in a Svelte project and asked to write/edit or analyze a Svelte component or module. Covers reactivity, event handling, styling, integration with libraries and more.
 ---
 
+## LoopTube Project Constraints
+
+In this repository, every `.svelte` component file MUST include a `<style></style>` block,
+even when no styles are needed. Missing style blocks can trigger the known SvelteKit SSR
+`css is not a function` failure.
+
+All user-facing strings MUST be externalized through the repository i18n layer
+(`src/lib/i18n/en.json`, `src/lib/i18n/ja.json`, and `createTranslator`) unless the string
+is an explicitly allowed brand/token value. Do not introduce hard-coded labels, aria-labels,
+empty-state copy, or toast text in Svelte templates.
+
+When Svelte or route code changes, validate with repository commands from `package.json`:
+use `bun run test:unit` or targeted `bunx vitest run <file>` for unit tests, and
+`bun run check` for Svelte/type validation.
+
 ## `$state`
 
 Only use the `$state` rune for variables that should be _reactive_ — in other words, variables that cause an `$effect`, `$derived` or template expression to update. Everything else can be a normal variable.

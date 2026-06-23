@@ -81,6 +81,8 @@ Execution steps:
    Domain & Data Model:
    - Entities, attributes, relationships
    - Identity & uniqueness rules
+   - Raw input vs normalized/canonical stored form
+   - Nullable/non-nullable values and fallback behavior for missing/unavailable data
    - Lifecycle/state transitions
    - Data volume / scale assumptions
 
@@ -110,10 +112,12 @@ Execution steps:
    Constraints & Tradeoffs:
    - Technical constraints (language, storage, hosting)
    - Explicit tradeoffs or rejected alternatives
+   - Any implementation detail that remains in spec because it is a product constraint
 
    Terminology & Consistency:
    - Canonical glossary terms
    - Avoided synonyms / deprecated terms
+   - Same concept named consistently across requirements, scenarios, entities, and assumptions
 
    Completion Signals:
    - Acceptance criteria testability
@@ -199,6 +203,8 @@ Execution steps:
    - No contradictory earlier statement remains (scan for now-invalid alternative choices removed).
    - Markdown structure valid; only allowed new headings: `## Clarifications`, `### Session YYYY-MM-DD`.
    - Terminology consistency: same canonical term used across all updated sections.
+   - Data contract consistency: no contradictory raw-vs-normalized, nullable-vs-required,
+     generated-vs-fetched, or fallback behavior remains after applying clarifications.
 
 8. Write the updated spec back to `FEATURE_SPEC`.
 

@@ -58,6 +58,9 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 1. **IF EXISTS**: Load `.specify/memory/constitution.md` for project principles and governance constraints.
+1. Before creating issues, perform the same cross-artifact consistency gate as `/speckit-analyze` for the active feature:
+   - Stop if tasks.md contains stale interface method names, contradictory adapter/repository responsibilities, mismatched data field nullability/fallback/raw-vs-normalized rules, invalid `[P]` markers, missing TDD tasks required by the constitution, or a P1/MVP scope that does not satisfy its Independent Test.
+   - Report the blocking issues and instruct the user to fix/regenerate tasks before issue sync. Do not create GitHub issues from inconsistent tasks.
 1. From the executed script, extract the path to **tasks**.
 1. Get the Git remote by running:
 

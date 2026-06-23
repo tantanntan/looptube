@@ -98,6 +98,18 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **IF EXISTS**: Read .specify/memory/constitution.md for governance constraints
    - **IF EXISTS**: Read quickstart.md for integration scenarios
 
+   **Pre-implementation consistency gate**:
+   - Before editing implementation files, compare spec.md, plan.md, research.md,
+     data-model.md, and tasks.md for HIGH/CRITICAL issues in:
+     interface method names and responsibilities, adapter/repository split, data field
+     nullability/fallback/raw-vs-normalized rules, storage keys, MVP boundary, task
+     dependencies, `[P]` markers, and constitution exceptions.
+   - Verify validation commands against `package.json` and `CLAUDE.md` before running them.
+     Do not run generated commands that do not exist in the repository.
+   - If unresolved HIGH/CRITICAL issues exist, STOP and report them. Do not implement
+     until the artifacts are corrected or the user explicitly instructs you to proceed
+     with a documented exception.
+
 4. **Project Setup Verification**:
    - **REQUIRED**: Create/verify ignore files based on actual project setup:
 
@@ -175,6 +187,11 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Check that implemented features match the original specification
    - Validate that tests pass and coverage meets requirements
    - Confirm the implementation follows the technical plan
+   - Confirm implementation still matches the authoritative interface/data contracts from
+     plan.md and data-model.md; do not rely on stale task wording if artifacts diverged
+   - Confirm every changed `.svelte` file has a `<style></style>` block, uses Svelte 5
+     syntax, has user-facing text externalized through i18n, and was validated with the
+     appropriate repository command
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit-tasks` first to regenerate the task list.
 

@@ -58,16 +58,21 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. **Setup**: Run `.specify/scripts/bash/setup-plan.sh --json` from repo root and parse JSON for FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
-2. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md`. Load IMPL_PLAN template (already copied).
+2. **Load context**: Read FEATURE_SPEC, `.specify/memory/constitution.md`, `package.json`,
+   and `CLAUDE.md`. Load IMPL_PLAN template (already copied).
 
 3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
    - Fill Constitution Check section from constitution
    - Evaluate gates (ERROR if violations unjustified)
+   - Treat newly introduced storage/interface boundaries as constitution-sensitive:
+     if the constitution names an existing port/interface, either use it or record the
+     domain-specific alternative as an explicit exception/violation in Complexity Tracking
    - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION)
    - Phase 1: Generate data-model.md, contracts/, quickstart.md
    - Phase 1: Update agent context by running the agent script
    - Re-evaluate Constitution Check post-design
+   - Run the Artifact Consistency Checklist from the plan template before reporting done
 
 ## Mandatory Post-Execution Hooks
 
@@ -140,6 +145,8 @@ Command ends after Phase 2 planning. Report branch, IMPL_PLAN path, and generate
    - Entity name, fields, relationships
    - Validation rules from requirements
    - State transitions if applicable
+   - For every field: source, stored/displayed form, raw-vs-normalized behavior,
+     nullability, fallback behavior, and ordering/lifecycle rules when relevant
 
 2. **Define interface contracts** (if project has external interfaces) → `/contracts/`:
    - Identify what interfaces the project exposes to users or other systems
@@ -156,6 +163,14 @@ Command ends after Phase 2 planning. Report branch, IMPL_PLAN path, and generate
 
 - Use absolute paths for filesystem operations; use project-relative paths for references in documentation and agent context files
 - ERROR on gate failures or unresolved clarifications
+- Before completion, compare spec.md, research.md, data-model.md, and plan.md for:
+  stale method names, conflicting interface responsibilities, mismatched field types or
+  nullability, raw-vs-normalized storage contradictions, stale fallback behavior, and
+  constitution exceptions marked PASS without rationale. Fix the artifacts or report the
+  unresolved conflict instead of silently proceeding.
+- Read `package.json` before documenting package manager or validation commands. The plan
+  must use the repository's actual `packageManager` and script names, and must not invent
+  generic npm/pnpm commands that are absent from this project.
 
 ## Done When
 

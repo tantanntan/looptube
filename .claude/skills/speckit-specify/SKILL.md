@@ -132,12 +132,16 @@ Given that feature description, do this:
     5. Generate Functional Requirements
        Each requirement must be testable
        Use reasonable defaults for unspecified details (document assumptions in Assumptions section)
-    6. Define Success Criteria
+    6. For every data entity/value exposed by the feature, specify the user-visible contract:
+       identity/uniqueness, raw input vs normalized output, stored vs displayed form,
+       nullability, fallback behavior, and lifecycle/ordering rules. If these are purely
+       implementation-level, defer them to planning instead of leaking them into spec.
+    7. Define Success Criteria
        Create measurable, technology-agnostic outcomes
        Include both quantitative metrics (time, performance, volume) and qualitative measures (user satisfaction, task completion)
        Each criterion must be verifiable without implementation details
-    7. Identify Key Entities (if data involved)
-    8. Return: SUCCESS (spec ready for planning)
+    8. Identify Key Entities (if data involved)
+    9. Return: SUCCESS (spec ready for planning)
 
 6. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
 
@@ -154,7 +158,7 @@ Given that feature description, do this:
       
       ## Content Quality
       
-      - [ ] No implementation details (languages, frameworks, APIs)
+      - [ ] No implementation details (languages, frameworks, APIs) unless explicitly documented as product constraints/assumptions
       - [ ] Focused on user value and business needs
       - [ ] Written for non-technical stakeholders
       - [ ] All mandatory sections completed
@@ -169,13 +173,14 @@ Given that feature description, do this:
       - [ ] Edge cases are identified
       - [ ] Scope is clearly bounded
       - [ ] Dependencies and assumptions identified
+      - [ ] Data values define identity, raw-vs-normalized behavior, nullability, fallback behavior, and lifecycle where relevant
       
       ## Feature Readiness
       
       - [ ] All functional requirements have clear acceptance criteria
       - [ ] User scenarios cover primary flows
       - [ ] Feature meets measurable outcomes defined in Success Criteria
-      - [ ] No implementation details leak into specification
+      - [ ] No implementation details leak into specification without an explicit exception note
       
       ## Notes
       
@@ -302,7 +307,11 @@ When creating this spec from a user prompt:
    - Lack any reasonable default
 4. **Prioritize clarifications**: scope > security/privacy > user experience > technical details
 5. **Think like a tester**: Every vague requirement should fail the "testable and unambiguous" checklist item
-6. **Common areas needing clarification** (only if no reasonable default exists):
+6. **Prevent downstream artifact drift**: Treat these as clarification candidates when materially relevant:
+   - Whether a stored/displayed value is raw input, normalized output, generated, fetched, nullable, or fallback-derived
+   - Which value is the identity/deduplication key versus the user-facing value
+   - Whether a technical term in the spec is a product constraint or should move to the plan
+7. **Common areas needing clarification** (only if no reasonable default exists):
    - Feature scope and boundaries (include/exclude specific use cases)
    - User types and permissions (if multiple conflicting interpretations possible)
    - Security/compliance requirements (when legally/financially significant)
