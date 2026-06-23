@@ -1,0 +1,5 @@
+allowBuilds:
+  esbuild: true
+  '@playwright/test': true
+patchedDependencies:
+  '@sveltejs/kit@2.66.0': patches/@sveltejs__kit@2.66.0.patch

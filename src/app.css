@@ -1,0 +1,101 @@
+@font-face {
+	font-family: 'Barlow';
+	src: url('/fonts/barlow/barlow-semibold.woff2') format('woff2');
+	font-weight: 400 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Noto Sans JP';
+	src: url('/fonts/noto-sans-jp/noto-sans-jp-regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Roboto Mono';
+	src: url('/fonts/roboto-mono/roboto-mono-regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* Dark theme design tokens */
+:root {
+	--color-bg: #141412;
+	--color-surface: #1C1C1A;
+	--color-surface-raised: #282826;
+	--color-border: #3C3C3A;
+	--color-text: #FAF9F7;
+	--color-text-secondary: #C9C7C1;
+	--color-text-muted: #9C9B96;
+	--color-text-dim: #7A7A74;
+	--color-text-faint: #54534F;
+	--color-accent: #D93030;
+	--color-accent-soft: #E0504F;
+	--color-point-a: #4A90E2;
+	--color-point-b: #F0A020;
+
+	/* Spacing scale */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-8: 32px;
+
+	/* Typography */
+	--font-body: 'Noto Sans JP', system-ui, sans-serif;
+	--font-mono: 'Roboto Mono', monospace;
+	--font-brand: 'Barlow', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html,
+body {
+	height: 100%;
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	font-family: var(--font-body);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+	background: #D93030;
+	color: #FAF9F7;
+}
+
+@keyframes lt-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.25; }
+}
+
+/* Touch target minimum (WCAG 2.1 AA / FR-012) */
+button {
+	min-height: 44px;
+	min-width: 44px;
+	cursor: pointer;
+}
+
+button:disabled {
+	opacity: 0.32;
+	cursor: not-allowed !important;
+}
+
+/* Focus indicator (WCAG 2.1 AA / SC-006) */
+:focus-visible {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 2px;
+}
+

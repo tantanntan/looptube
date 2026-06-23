@@ -26,7 +26,23 @@
 		"speed": "Speed",
 		"loop_count": "Loop Count",
 		"infinite": "Infinite",
-		"times": "times"
+		"times": "times",
+		"counter": "{n} / {m}"
+	},
+	"loops": {
+		"section_heading": "Saved Loops",
+		"save_placeholder": "Loop name (e.g. Chorus bar 4)",
+		"save_button": "Save Loop",
+		"delete_confirm": "Delete this loop?",
+		"confirm_yes": "Yes",
+		"confirm_no": "No",
+		"empty": "No saved loops for this video.",
+		"delete": "Delete"
+	},
+	"timeline": {
+		"track": "Video timeline",
+		"zoom_in": "Zoom in to A-B region",
+		"zoom_out": "Zoom out to full video"
 	},
 	"segment": {
 		"save": "Save",

@@ -6,7 +6,10 @@ import { resolve } from 'node:path';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
-	plugins: [svelte({ hot: false })],
+	// configFile: false prevents loading svelte.config.js's vitePreprocess(),
+	// which avoids the Vite 6 PartialEnvironment("client") crash in jsdom
+	// when preprocessing <style> blocks. TypeScript is handled by Vite/esbuild.
+	plugins: [svelte({ hot: false, configFile: false })],
 	resolve: {
 		conditions: ['browser'],
 		alias: {

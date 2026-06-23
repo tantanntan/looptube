@@ -16,10 +16,19 @@
 	import type { VideoPlayerPort } from '$lib/ports/VideoPlayerPort.js';
 	import VideoPlayer from '$lib/components/VideoPlayer.svelte';
 	import ABControls from '$lib/components/ABControls.svelte';
-	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import Timeline from '$lib/components/Timeline.svelte';
 	import PlaybackControls from '$lib/components/PlaybackControls.svelte';
-	import SegmentList from '$lib/components/SegmentList.svelte';
+	import LoopList from '$lib/components/LoopList.svelte';
+	import LoopTubeHeader from '$lib/components/LoopTubeHeader.svelte';
+	import { createTranslator } from '$lib/i18n/index.js';
+	import { formatTimecode } from '$lib/utils/timeline.js';
 	import type { Segment } from '$lib/ports/StoragePort.js';
+	import type { PageData } from './$types';
+
+	const FPS = 30;
+
+	let { data }: { data: PageData } = $props();
+	const t = $derived(createTranslator(data.locale));
 
 	// Core domain objects — fake adapters for SSR safety; real adapters set on mount
 	const machine = new ABLoopStateMachine();
@@ -38,8 +47,21 @@
 	let loopCount = $state<number | 'infinite'>('infinite');
 	let segments = $state<Segment[]>([]);
 	let segmentName = $state('');
+	let zoom = $state(1);
+	let spVideoOpen = $state(false);
+	let videoTitle = $state('');
 
 	let progressInterval: ReturnType<typeof setInterval> | null = null;
+
+	const activePoint = $derived(
+		(() => {
+			if (machineState.status === 'LOOPING')
+				return machineState.lastSetPoint === 'A' ? 'a' : 'b';
+			if (machineState.status === 'HAS_A') return 'a';
+			if (machineState.status === 'HAS_B') return 'b';
+			return null;
+		})() as 'a' | 'b' | null
+	);
 
 	function handleKeydown(e: KeyboardEvent) {
 		const tag = (e.target as HTMLElement).tagName;
@@ -142,6 +164,10 @@
 		ytPlayer.initialize();
 		ytPlayer.onStateChange((state) => {
 			playing = state === 'PLAYING';
+			if (state !== 'UNSTARTED') {
+				const t = ytPlayer.getVideoTitle();
+				if (t) videoTitle = t;
+			}
 		});
 
 		// Restore loop from share URL if present
@@ -152,6 +178,10 @@
 		controller = new LoopController(machine, ytPlayer, realTimer);
 
 		ytPlayer.onReady(() => {
+			// Load video if videoId was set before the player became ready
+			if (videoId) {
+				ytPlayer.loadVideo(videoId);
+			}
 			if (shareResult.ok) {
 				const d = ytPlayer.getDuration();
 				const clamped = UrlSerializer.clampToDuration(shareResult, d);
@@ -165,6 +195,7 @@
 			progressInterval = setInterval(() => {
 				currentTime = player.getCurrentTime();
 				duration = player.getDuration();
+				machineState = machine.getState();
 			}, 100);
 		});
 	});
@@ -190,9 +221,11 @@
 		const id = normalizeVideoId(urlInput);
 		if (!id) return;
 		videoId = id;
+		// Explicitly load the video; don't rely solely on the $effect in VideoPlayer
+		await player.loadVideo(id);
 		const url = new URL($page.url.toString());
 		url.searchParams.set('v', id);
-		goto(url.toString(), { replaceState: true, keepFocus: true });
+		await goto(url.toString(), { replaceState: true, keepFocus: true });
 		await loadSegments();
 	}
 
@@ -243,6 +276,30 @@
 	function handleClearAll() {
 		machine.clearAll();
 		machineState = machine.getState();
+		zoom = 1;
+	}
+
+	function handleZoomIn() {
+		if (machineState.status !== 'LOOPING') return;
+		zoom = 2;
+	}
+
+	function handleZoomOut() {
+		zoom = 1;
+	}
+
+	function handleDragA(seconds: number) {
+		machine.setA(seconds);
+		machineState = machine.getState();
+	}
+
+	function handleDragB(seconds: number) {
+		machine.setB(seconds);
+		machineState = machine.getState();
+	}
+
+	function handleSeek(seconds: number) {
+		player.seekTo(seconds);
 	}
 
 	function handleNudgeLastSet(delta: number) {
@@ -290,109 +347,275 @@
 	<title>LoopTube — A-B Repeat Player</title>
 </svelte:head>
 
-<main>
-	<h1>LoopTube</h1>
-
-	<form onsubmit={(e) => { e.preventDefault(); handleLoad(); }} class="url-form">
-		<label for="url-input">YouTube URL or Video ID</label>
-		<input
-			id="url-input"
-			type="text"
-			bind:value={urlInput}
-			placeholder="Paste a YouTube URL or video ID"
-		/>
-		<button type="submit">Load</button>
-	</form>
+<main class="lt-page">
+	<LoopTubeHeader
+		{urlInput}
+		onUrlInput={(v) => (urlInput = v)}
+		onUrlSubmit={handleLoad}
+	/>
 
 	<!-- Always rendered so div#yt-player exists before YouTube IFrame API init -->
-	<VideoPlayer {player} {videoId} />
-
-	{#if videoId}
-		<ProgressBar
-			{currentTime}
-			{duration}
-			pointA={machineState.status === 'HAS_A' || machineState.status === 'LOOPING'
-				? machineState.pointA
-				: null}
-			pointB={machineState.status === 'HAS_B' || machineState.status === 'LOOPING'
-				? machineState.pointB
-				: null}
-		/>
-
-		<ABControls
-			pointA={machineState.status === 'HAS_A' || machineState.status === 'LOOPING'
-				? machineState.pointA
-				: null}
-			pointB={machineState.status === 'HAS_B' || machineState.status === 'LOOPING'
-				? machineState.pointB
-				: null}
-			onSetA={handleSetA}
-			onSetB={handleSetB}
-			onNudgeA={handleNudgeA}
-			onNudgeB={handleNudgeB}
-			onClearA={handleClearA}
-			onClearB={handleClearB}
-			onClearAll={handleClearAll}
-		/>
-
-		<PlaybackControls
-			{speed}
-			{loopCount}
-			onSpeedChange={handleSpeedChange}
-			onLoopCountChange={handleLoopCountChange}
-		/>
-
-		{#if machineState.status === 'LOOPING'}
-			<form onsubmit={(e) => { e.preventDefault(); handleSaveSegment(); }} class="save-form">
-				<label for="segment-name">Segment Name</label>
-				<input
-					id="segment-name"
-					type="text"
-					bind:value={segmentName}
-					placeholder="e.g. verse 1"
+	<div id="lt-work">
+		<div id="lt-video" class:sp-open={spVideoOpen}>
+			<button
+				type="button"
+				class="lt-video-toggle"
+				onclick={() => (spVideoOpen = !spVideoOpen)}
+				aria-expanded={spVideoOpen}
+				aria-controls="lt-video-body"
+			>
+				<span class="lt-video-toggle-title">{videoTitle}</span>
+				<span class="lt-video-toggle-icon" aria-hidden="true">{spVideoOpen ? '▲' : '▼'}</span>
+			</button>
+			<div class="lt-video-body" id="lt-video-body">
+				<VideoPlayer {player} {videoId} />
+			</div>
+			{#if videoId}
+				<Timeline
+					{currentTime}
+					{duration}
+					pointA={machineState.status === 'HAS_A' || machineState.status === 'LOOPING'
+						? machineState.pointA
+						: null}
+					pointB={machineState.status === 'HAS_B' || machineState.status === 'LOOPING'
+						? machineState.pointB
+						: null}
+					{zoom}
+					{speed}
+					{t}
+					onDragA={handleDragA}
+					onDragB={handleDragB}
+					onZoomIn={handleZoomIn}
+					onZoomOut={handleZoomOut}
+					onSeek={handleSeek}
+					onSpeedChange={handleSpeedChange}
 				/>
-				<button type="submit">Save Loop</button>
-			</form>
-		{/if}
 
-		{#if machineState.status === 'LOOPING'}
-			<button type="button" onclick={handleShare}>Share</button>
-		{/if}
-		{#if shareToast}
-			<p role="status">{shareToast}</p>
-		{/if}
+				<PlaybackControls
+					{loopCount}
+					loopsCompleted={machineState.status === 'LOOPING' ? machineState.loopsCompleted : 0}
+					{t}
+					onLoopCountChange={handleLoopCountChange}
+				/>
+			{/if}
+		</div>
 
-		<SegmentList
-			{segments}
-			onLoad={handleLoadSegment}
-			onDelete={handleDeleteSegment}
-		/>
-	{/if}
+		{#if videoId}
+			<div id="lt-controls">
+				<div class="lt-playhead-panel">
+					<div class="lt-playhead-timecode">{formatTimecode(currentTime, FPS)}</div>
+					<div class="lt-playhead-btns">
+						<button
+							onclick={() => player.seekTo(Math.max(0, currentTime - 1))}
+							aria-label="-1s">−1s</button
+						>
+						<button
+							onclick={() => player.seekTo(Math.max(0, currentTime - 1 / FPS))}
+							aria-label="-1f">−1f</button
+						>
+						<button
+							onclick={handlePlayPause}
+							aria-label={playing ? '一時停止' : '再生'}
+						>{playing ? '⏸' : '▶'}</button>
+						<button
+							onclick={() => player.seekTo(Math.min(duration, currentTime + 1 / FPS))}
+							aria-label="+1f">+1f</button
+						>
+						<button
+							onclick={() => player.seekTo(Math.min(duration, currentTime + 1))}
+							aria-label="+1s">+1s</button
+						>
+					</div>
+				</div>
+
+				<ABControls
+					pointA={machineState.status === 'HAS_A' || machineState.status === 'LOOPING'
+						? machineState.pointA
+						: null}
+					pointB={machineState.status === 'HAS_B' || machineState.status === 'LOOPING'
+						? machineState.pointB
+						: null}
+					{activePoint}
+					fps={FPS}
+					{t}
+					onSetA={handleSetA}
+					onSetB={handleSetB}
+					onNudgeA={handleNudgeA}
+					onNudgeB={handleNudgeB}
+					onClearA={handleClearA}
+					onClearB={handleClearB}
+					onClearAll={handleClearAll}
+				/>
+
+				{#if machineState.status === 'LOOPING'}
+					<button type="button" class="lt-share-btn" onclick={handleShare}>共有リンクをコピー</button>
+					{#if shareToast}<p role="status" class="lt-share-toast">{shareToast}</p>{/if}
+				{/if}
+
+				<LoopList
+					loops={segments}
+					{t}
+					onLoad={handleLoadSegment}
+					onDelete={handleDeleteSegment}
+					canSave={machineState.status === 'LOOPING'}
+					{segmentName}
+					onSegmentNameChange={(n) => (segmentName = n)}
+					onSave={handleSaveSegment}
+				/>
+			</div>
+		{/if}
+	</div>
 </main>
 
 <style>
-	main {
-		max-width: 900px;
+	.lt-page {
+		width: 100%;
+		max-width: 1000px;
 		margin: 0 auto;
-		padding: 1rem;
-		font-family: system-ui, sans-serif;
+		padding: var(--space-4);
+		overflow-x: hidden;
 	}
 
-	.url-form {
+	#lt-work {
 		display: flex;
-		gap: 0.5rem;
-		margin-bottom: 1rem;
+		gap: var(--space-4);
+		align-items: flex-start;
 	}
 
-	input {
+	#lt-video {
 		flex: 1;
-		padding: 0.5rem;
-		font-size: 1rem;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
 	}
 
-	button {
-		padding: 0.5rem 1rem;
-		font-size: 1rem;
+	.lt-video-toggle {
+		display: none;
+	}
+
+	.lt-video-body {
+		display: contents;
+	}
+
+	#lt-controls {
+		width: 320px;
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.lt-playhead-panel {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		padding: var(--space-3);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+	}
+
+	.lt-playhead-timecode {
+		font-family: var(--font-mono);
+		font-size: 2rem;
+		color: var(--color-text);
+		letter-spacing: 0.05em;
+		text-align: center;
+	}
+
+	.lt-playhead-btns {
+		display: flex;
+		gap: var(--space-1);
+		justify-content: center;
+	}
+
+	.lt-playhead-btns button {
+		flex: 1;
+		height: 36px;
+		min-height: 36px;
+		min-width: 0;
+		background: var(--color-surface-raised);
+		border: 1px solid var(--color-border);
+		border-radius: 4px;
+		color: var(--color-text-secondary);
+		font-family: var(--font-brand);
+		font-size: 0.75rem;
 		cursor: pointer;
+	}
+
+	.lt-playhead-btns button:hover {
+		background: var(--color-border);
+		color: var(--color-text);
+	}
+
+	.lt-share-btn {
+		width: 100%;
+		height: 36px;
+		min-height: 36px;
+		background: var(--color-surface-raised);
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		color: var(--color-text-secondary);
+		font-size: 0.8125rem;
+		cursor: pointer;
+	}
+
+	.lt-share-btn:hover {
+		border-color: var(--color-text-muted);
+		color: var(--color-text);
+	}
+
+	.lt-share-toast {
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+
+	@media (max-width: 700px) {
+		#lt-work {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		#lt-controls {
+			width: 100%;
+		}
+
+		.lt-video-toggle {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			width: 100%;
+			padding: var(--space-3) var(--space-4);
+			background: var(--color-surface);
+			border: 1px solid var(--color-border);
+			border-radius: 6px;
+			color: var(--color-text-secondary);
+			font-size: 0.875rem;
+			cursor: pointer;
+		}
+
+		.lt-video-toggle-icon {
+			font-size: 0.75rem;
+			color: var(--color-text-dim);
+			flex-shrink: 0;
+		}
+
+		.lt-video-toggle-title {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.lt-video-body {
+			display: none;
+			flex-direction: column;
+			gap: var(--space-3);
+		}
+
+		#lt-video.sp-open .lt-video-body {
+			display: flex;
+		}
 	}
 </style>

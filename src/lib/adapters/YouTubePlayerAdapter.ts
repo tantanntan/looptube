@@ -76,6 +76,10 @@ export class YouTubePlayerAdapter implements VideoPlayerPort {
 		return this.player?.getPlaybackRate() ?? 1;
 	}
 
+	getVideoTitle(): string {
+		return this.player?.getVideoData()?.title ?? '';
+	}
+
 	onReady(callback: () => void): void {
 		this.readyCallbacks.push(callback);
 	}
