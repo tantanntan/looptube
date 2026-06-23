@@ -1,3 +1,14 @@
+export function formatTimecode(seconds: number, fps = 30): string {
+	if (isNaN(seconds) || seconds < 0) return '--:--:--';
+	const totalFrames = Math.round(seconds * fps);
+	const ff = totalFrames % fps;
+	const totalSecs = Math.floor(totalFrames / fps);
+	const s = totalSecs % 60;
+	const m = Math.floor(totalSecs / 60);
+	const p = (n: number) => String(n).padStart(2, '0');
+	return `${p(m)}:${p(s)}:${p(ff)}`;
+}
+
 export interface ZoomWindow {
 	start: number;
 	end: number;

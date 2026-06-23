@@ -9,6 +9,7 @@ export class FakeVideoPlayer implements VideoPlayerPort {
 	private _stateCallbacks: Array<(s: PlayerState) => void> = [];
 	private _errorCallbacks: Array<(e: VideoLoadError) => void> = [];
 	loadVideoResult: { ok: true } | { ok: false; error: VideoLoadError } = { ok: true };
+	private _videoTitle = '';
 
 	async loadVideo(_videoId: string) {
 		return this.loadVideoResult;
@@ -44,6 +45,10 @@ export class FakeVideoPlayer implements VideoPlayerPort {
 		return this._playbackRate;
 	}
 
+	getVideoTitle(): string {
+		return this._videoTitle;
+	}
+
 	onReady(callback: () => void): void {
 		this._readyCallbacks.push(callback);
 	}
@@ -77,6 +82,10 @@ export class FakeVideoPlayer implements VideoPlayerPort {
 
 	setDuration(d: number): void {
 		this._duration = d;
+	}
+
+	setVideoTitle(title: string): void {
+		this._videoTitle = title;
 	}
 
 	getState(): PlayerState {

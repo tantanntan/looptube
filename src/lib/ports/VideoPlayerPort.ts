@@ -14,6 +14,7 @@ export interface VideoPlayerPort {
 	getDuration(): number;
 	setPlaybackRate(rate: number): void;
 	getPlaybackRate(): number;
+	getVideoTitle(): string;
 	onReady(callback: () => void): void;
 	onStateChange(callback: (state: PlayerState) => void): void;
 	onError(callback: (error: VideoLoadError) => void): void;

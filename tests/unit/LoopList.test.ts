@@ -15,7 +15,9 @@ const loops: Segment[] = [
 		name: 'Chorus',
 		pointA: 10,
 		pointB: 30,
-		speed: 0.75
+		speed: 0.75,
+		createdAt: new Date('2024-01-01'),
+		updatedAt: new Date('2024-01-01')
 	}
 ];
 
@@ -26,15 +28,15 @@ describe('LoopList.svelte', () => {
 	});
 
 	it('shows formatted pointA time', () => {
-		// formatTime(10) = '00:10.0'
+		// formatTimecode(10, 30) = '00:10:00'
 		render(LoopList, { loops, t, onLoad: vi.fn(), onDelete: vi.fn() });
-		expect(screen.getByText(/00:10\.0/)).toBeTruthy();
+		expect(screen.getByText(/00:10:00/)).toBeTruthy();
 	});
 
 	it('shows formatted pointB time', () => {
-		// formatTime(30) = '00:30.0'
+		// formatTimecode(30, 30) = '00:30:00'
 		render(LoopList, { loops, t, onLoad: vi.fn(), onDelete: vi.fn() });
-		expect(screen.getByText(/00:30\.0/)).toBeTruthy();
+		expect(screen.getByText(/00:30:00/)).toBeTruthy();
 	});
 
 	it('shows the playback speed', () => {

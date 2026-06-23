@@ -14,23 +14,22 @@ describe('ABControls.svelte', () => {
 		expect(screen.getByRole('button', { name: /^set b$/i })).toBeTruthy();
 	});
 
-	it('displays pointA in MM:SS.s format when set', () => {
+	it('displays pointA in MM:SS:FF format when set', () => {
 		render(ABControls, { pointA: 63.2, pointB: null, t });
-		// renders as 'A: 01:03.2'
-		expect(screen.getByText(/01:03\.2/)).toBeTruthy();
+		// formatTimecode(63.2, 30) = '01:03:06'
+		expect(screen.getByText(/01:03:06/)).toBeTruthy();
 	});
 
-	it('displays pointB in MM:SS.s format when set', () => {
+	it('displays pointB in MM:SS:FF format when set', () => {
 		render(ABControls, { pointB: 78.5, pointA: null, t });
-		// renders as 'B: 01:18.5'
-		expect(screen.getByText(/01:18\.5/)).toBeTruthy();
+		// formatTimecode(78.5, 30) = '01:18:15'
+		expect(screen.getByText(/01:18:15/)).toBeTruthy();
 	});
 
-	it('displays em-dash placeholder when pointA is not set', () => {
+	it('displays --:--:-- placeholder when pointA is not set', () => {
 		render(ABControls, { pointA: null, pointB: null, t });
-		// 'A: —' and 'B: —' are shown when neither point is set
-		const dashes = screen.getAllByText(/—/);
-		expect(dashes.length).toBeGreaterThanOrEqual(2);
+		const placeholders = screen.getAllByText('--:--:--');
+		expect(placeholders.length).toBeGreaterThanOrEqual(2);
 	});
 
 	it('calls onSetA callback when A button clicked', async () => {
@@ -47,16 +46,13 @@ describe('ABControls.svelte', () => {
 		expect(onSetB).toHaveBeenCalledOnce();
 	});
 
-	it('calls onNudgeA with +0.1 when +0.1 A button clicked', async () => {
-		const onNudgeA = vi.fn();
-		render(ABControls, { pointA: 10, pointB: null, t, onNudgeA });
-		await fireEvent.click(screen.getByRole('button', { name: /\+0\.1 A/i }));
-		expect(onNudgeA).toHaveBeenCalledWith(0.1);
+	it('shows loupe slider for A when pointA is set', () => {
+		render(ABControls, { pointA: 10, pointB: null, t });
+		expect(screen.getByRole('slider', { name: /point a/i })).toBeTruthy();
 	});
 
-	it('hides nudge and clear A buttons when pointA is null', () => {
+	it('hides Clear A button when pointA is null', () => {
 		render(ABControls, { pointA: null, pointB: null, t });
-		expect(screen.queryByRole('button', { name: /\+0\.1 A/i })).toBeNull();
 		expect(screen.queryByRole('button', { name: /clear a/i })).toBeNull();
 	});
 

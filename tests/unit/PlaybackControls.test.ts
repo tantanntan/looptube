@@ -8,58 +8,51 @@ afterEach(() => cleanup());
 const t = createTranslator('en');
 
 describe('PlaybackControls.svelte', () => {
-	it('renders speed selector with 7 options including 0.25', () => {
-		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', t });
-		const select = screen.getByRole('combobox', { name: /speed/i });
-		expect(select).toBeTruthy();
-		const options = select.querySelectorAll('option');
-		expect(options.length).toBe(7);
+	it('displays ∞ symbol when loopCount is infinite', () => {
+		render(PlaybackControls, { loopCount: 'infinite', loopsCompleted: 0, t });
+		expect(screen.getByText('∞')).toBeTruthy();
 	});
 
-	it('calls onSpeedChange when speed is selected', async () => {
-		const onSpeedChange = vi.fn();
-		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', onSpeedChange, t });
-		const select = screen.getByRole('combobox', { name: /speed/i });
-		await fireEvent.change(select, { target: { value: '0.5' } });
-		expect(onSpeedChange).toHaveBeenCalledWith(0.5);
+	it('displays numeric loop count', () => {
+		render(PlaybackControls, { loopCount: 3, loopsCompleted: 0, t });
+		expect(screen.getByText('3')).toBeTruthy();
 	});
 
-	it('renders loop count input', () => {
-		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', t });
-		expect(screen.getByRole('spinbutton', { name: /loop count/i })).toBeTruthy();
-	});
-
-	it('calls onLoopCountChange with number when count is set', async () => {
-		const onLoopCountChange = vi.fn();
-		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', onLoopCountChange, t });
-		const input = screen.getByRole('spinbutton', { name: /loop count/i });
-		await fireEvent.change(input, { target: { value: '3' } });
-		expect(onLoopCountChange).toHaveBeenCalledWith(3);
-	});
-
-	it('calls onLoopCountChange with infinite when 0 is entered', async () => {
-		const onLoopCountChange = vi.fn();
-		render(PlaybackControls, { speed: 1.0, loopCount: 3, onLoopCountChange, t });
-		const input = screen.getByRole('spinbutton', { name: /loop count/i });
-		await fireEvent.change(input, { target: { value: '0' } });
-		expect(onLoopCountChange).toHaveBeenCalledWith('infinite');
-	});
-
-	// T027a: Failing tests — pass after T028-T029
-	it('speed selector includes 0.25x option', () => {
-		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', loopsCompleted: 0, t: (k: string) => k });
-		const select = screen.getByRole('combobox', { name: /speed/i });
-		const options = Array.from(select.querySelectorAll('option')).map((o) => o.value);
-		expect(options).toContain('0.25');
-	});
-
-	it('displays N/M counter when loopCount is a finite number', () => {
-		render(PlaybackControls, { speed: 1.0, loopCount: 5, loopsCompleted: 2, t: (k: string) => k });
+	it('displays N/M counter when loopCount is finite', () => {
+		render(PlaybackControls, { loopCount: 5, loopsCompleted: 2, t: (k: string) => k });
 		expect(screen.getByText('2 / 5')).toBeTruthy();
 	});
 
-	it('displays ∞ symbol when loopCount is infinite', () => {
-		render(PlaybackControls, { speed: 1.0, loopCount: 'infinite', loopsCompleted: 0, t: (k: string) => k });
-		expect(screen.getByText('∞')).toBeTruthy();
+	it('does not display N/M counter when loopCount is infinite', () => {
+		render(PlaybackControls, { loopCount: 'infinite', loopsCompleted: 0, t: (k: string) => k });
+		expect(screen.queryByText(/\/$/)).toBeNull();
+	});
+
+	it('calls onLoopCountChange with decremented value when − is clicked', async () => {
+		const onLoopCountChange = vi.fn();
+		render(PlaybackControls, { loopCount: 3, onLoopCountChange, t });
+		await fireEvent.click(screen.getByRole('button', { name: 'ループ回数を減らす' }));
+		expect(onLoopCountChange).toHaveBeenCalledWith(2);
+	});
+
+	it('calls onLoopCountChange with incremented value when + is clicked', async () => {
+		const onLoopCountChange = vi.fn();
+		render(PlaybackControls, { loopCount: 3, onLoopCountChange, t });
+		await fireEvent.click(screen.getByRole('button', { name: 'ループ回数を増やす' }));
+		expect(onLoopCountChange).toHaveBeenCalledWith(4);
+	});
+
+	it('calls onLoopCountChange with infinite when + is clicked at 99', async () => {
+		const onLoopCountChange = vi.fn();
+		render(PlaybackControls, { loopCount: 99, onLoopCountChange, t });
+		await fireEvent.click(screen.getByRole('button', { name: 'ループ回数を増やす' }));
+		expect(onLoopCountChange).toHaveBeenCalledWith('infinite');
+	});
+
+	it('calls onLoopCountChange with 99 when − is clicked at infinite', async () => {
+		const onLoopCountChange = vi.fn();
+		render(PlaybackControls, { loopCount: 'infinite', onLoopCountChange, t });
+		await fireEvent.click(screen.getByRole('button', { name: 'ループ回数を減らす' }));
+		expect(onLoopCountChange).toHaveBeenCalledWith(99);
 	});
 });
