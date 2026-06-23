@@ -11,6 +11,14 @@
 		e.preventDefault();
 		onUrlSubmit?.();
 	}
+
+	function handleFocus(e: FocusEvent) {
+		(e.target as HTMLInputElement).select();
+	}
+
+	function handleClear() {
+		onUrlInput?.('');
+	}
 </script>
 
 <header class="lt-header">
@@ -21,14 +29,25 @@
 		<div class="lt-tagline">In / Out Frame Editor</div>
 	</div>
 	<form class="lt-url-form" onsubmit={handleSubmit}>
-		<input
-			type="text"
-			class="lt-url-input"
-			value={urlInput}
-			oninput={(e) => onUrlInput?.((e.target as HTMLInputElement).value)}
-			placeholder="YouTube URL または 動画ID"
-			aria-label="YouTube URL or Video ID"
-		/>
+		<div class="lt-url-input-wrapper">
+			<input
+				type="text"
+				class="lt-url-input"
+				value={urlInput}
+				oninput={(e) => onUrlInput?.((e.target as HTMLInputElement).value)}
+				onfocus={handleFocus}
+				placeholder="YouTube URL または 動画ID"
+				aria-label="YouTube URL or Video ID"
+			/>
+			{#if urlInput}
+				<button
+					type="button"
+					class="lt-url-clear"
+					onclick={handleClear}
+					aria-label="入力をクリア"
+				>×</button>
+			{/if}
+		</div>
 		<button type="submit" class="lt-url-submit">読み込む</button>
 	</form>
 </header>
@@ -85,9 +104,17 @@
 		max-width: 560px;
 	}
 
-	.lt-url-input {
+	.lt-url-input-wrapper {
+		position: relative;
 		flex: 1;
-		padding: var(--space-2) var(--space-3);
+		min-width: 0;
+		display: flex;
+		align-items: center;
+	}
+
+	.lt-url-input {
+		width: 100%;
+		padding: var(--space-2) 1.75rem var(--space-2) var(--space-3);
 		background: var(--color-surface-raised);
 		border: 1px solid var(--color-border);
 		border-radius: 6px;
@@ -106,6 +133,29 @@
 	.lt-url-input:focus {
 		outline: none;
 		border-color: var(--color-accent);
+	}
+
+	.lt-url-clear {
+		position: absolute;
+		right: var(--space-2);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		padding: 0;
+		min-width: 0;
+		min-height: 0;
+		border: none;
+		background: transparent;
+		color: var(--color-text-dim);
+		font-size: 1rem;
+		line-height: 1;
+		cursor: pointer;
+	}
+
+	.lt-url-clear:hover {
+		color: var(--color-text);
 	}
 
 	.lt-url-submit {
