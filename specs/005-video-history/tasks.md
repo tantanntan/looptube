@@ -26,7 +26,7 @@
 **⚠️ CRITICAL**: この Phase が完了するまでユーザーストーリーの実装を開始しない
 
 - [ ] T002 [P] `src/lib/ports/HistoryPort.ts` を新規作成し `HistoryItem` 型と `HistoryPort` インターフェース（`getAll`, `replaceAll`, `remove`, `clear`）を定義する
-- [ ] T003 [P] `tests/unit/YouTubeUrlParser.test.ts` を新規作成し `extractVideoId`（watch?v=, youtu.be/, embed/, shorts/, 生 ID）と `buildThumbnailUrl` のテストを RED 状態で書く（T002 完了後）
+- [ ] T003 [P] `tests/unit/YouTubeUrlParser.test.ts` を新規作成し `extractVideoId`（watch?v=, youtu.be/, embed/, shorts/, 生 ID）と `buildThumbnailUrl` のテストを RED 状態で書く（`HistoryPort` に非依存、Phase 2 開始後すぐ着手可）
 - [ ] T004 [P] `src/lib/core/YouTubeUrlParser.ts` を新規作成し T003 のテストをすべて GREEN にする（T003 完了後）
 - [ ] T005 `src/lib/fakes/InMemoryHistoryAdapter.ts` を新規作成し `HistoryPort` のインメモリ実装を提供する（T002 完了後）
 
@@ -98,7 +98,8 @@
 ### タスク内依存関係
 
 ```
-T002 (HistoryPort) ─────┬─→ T003 (URLParser test RED) → T004 (URLParser impl GREEN)
+T003 (URLParser test RED) ──────────────────────→ T004 (URLParser impl GREEN)
+T002 (HistoryPort) ─────┬──────────────────────────────────────────────────────
                          ├─→ T005 (InMemoryAdapter)
                          ├─→ T006 (Repository test RED) → T007 (Repository impl GREEN)
                          └─→ T008 (LocalAdapter test RED) → T009 (LocalAdapter impl GREEN)

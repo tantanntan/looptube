@@ -27,7 +27,7 @@
 |--------|------|------|
 | Port/Adapter パターン遵守 | PASS | `HistoryPort` + `LocalHistoryAdapter` + `InMemoryHistoryAdapter` |
 | ドメインロジックに `window`/`HTMLElement` 非依存 | PASS | `VideoHistoryRepository` は純粋 TypeScript |
-| StoragePort は `LocalStorageAdapter` 経由 | PASS | 新規 `HistoryPort` も同様のパターンに従う |
+| StoragePort は `LocalStorageAdapter` 経由 | **EXCEPTION 承認** | Constitution 原則は「`localStorage` を直接操作しない」ことが目的。`HistoryPort` は新規ドメイン固有ポートとして同じ Port/Adapter パターンで実装するため原則を満たす。既存の `StoragePort` は Segment 専用であり拡張すると単一責任原則に反する。この判断は History ドメインに限定した例外として承認する。 |
 | ユニットテスト: Fake 実装でカバー | PASS | `InMemoryHistoryAdapter` を用意 |
 | i18n 対応 | PASS | 全ラベルを `ja.json`/`en.json` に追加 |
 | `<style></style>` ブロック必須（SSR）| PASS | 全 `.svelte` に空 style ブロックを含める |
@@ -73,8 +73,9 @@ interface HistoryPort {
 - `HistoryPort` の localStorage 実装
 - キー: `looptube:history`
 - `getAll()`: JSON.parse → `addedAt` を `Date` に復元 → エラー時は空配列を返す
-- `add()`: getAll → upsert（同 id があれば更新） → JSON.stringify → setItem → エラー時はサイレントに継続
-- `remove()`: getAll → filter → setItem
+- `getAll()`: JSON.parse → `addedAt` を `Date` に復元 → エラー時は空配列を返す
+- `replaceAll(items)`: JSON.stringify → setItem → エラー時はサイレントに継続
+- `remove(id)`: getAll → filter → replaceAll（Adapter 内部で完結。Repository は port.remove(id) に委譲するだけでよい）
 - `clear()`: removeItem
 
 ### 1-5. `VideoHistoryRepository.ts`（新規）
@@ -89,7 +90,7 @@ interface HistoryPort {
   4. 51 件以上なら `addedAt` 昇順ソートの先頭（= 最古）を削除して 50 件に切り詰める
   5. `port.replaceAll(updatedItems)` で全件を原子的に保存
 - `getAll()`: `port.getAll()` を `addedAt` 降順でソートして返す
-- `remove(id)`: `port.getAll()` → filter → `port.replaceAll()` に委譲（Adapter 側に削除ロジックを持たせない）
+- `remove(id)`: `port.remove(id)` に委譲（削除の実装は Adapter 内部に閉じる）
 - `buildHistoryItem(videoId, url, title?)`: `HistoryItem` を組み立てるファクトリ
 
 ---
@@ -106,7 +107,7 @@ Props:
 - `onDelete: (id: string) => void`
 
 表示:
-- サムネイル画像（`thumbnailUrl`、フォールバック: プレースホルダー SVG）
+- サムネイル画像（`thumbnailUrl` は常に存在。`<img onerror>` で画像ロード失敗時にプレースホルダー SVG を UI フォールバックとして表示）
 - タイトル（空文字の場合は `item.url`）
 - ゴミ箱アイコンボタン（常時表示）
 
@@ -167,7 +168,7 @@ Props:
 - `tests/unit/LocalHistoryAdapter.test.ts`
   - localStorage への読み書きが正しく行われるか
   - localStorage が壊れているとき（JSON parse エラー）に空配列を返すか
-  - `add()` 失敗時にエラーを throw しないか
+  - `replaceAll()` 失敗時にエラーを throw しないか（サイレント継続）
 
 ---
 

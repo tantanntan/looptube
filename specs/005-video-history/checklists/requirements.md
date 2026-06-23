@@ -27,7 +27,7 @@
 - [x] All functional requirements have clear acceptance criteria
 - [x] User scenarios cover primary flows
 - [x] Feature meets measurable outcomes defined in Success Criteria
-- [x] No implementation details leak into specification
+- [x] No implementation details leak into specification — `HistoryPort` / `localStorage` の言及は Content Quality セクションと同様の理由で許容（抽象概念・ビジネス要件説明として残す）
 
 ## Notes
 
