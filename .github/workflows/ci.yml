@@ -15,29 +15,20 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Generate SvelteKit types
-        run: pnpm exec svelte-kit sync
+        run: bunx svelte-kit sync
 
       - name: Unit tests (with coverage gate)
-        run: pnpm test:unit --coverage
+        run: bun run test:unit --coverage
 
       - name: Integration tests
-        run: pnpm test:integration
+        run: bun run test:integration
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps
+        run: bunx playwright install --with-deps
 
       - name: E2E tests
-        run: pnpm test:e2e:ci
+        run: bun run test:e2e:ci

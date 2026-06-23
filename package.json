@@ -38,5 +38,12 @@
     "typescript-eslint": "^8.17.0",
     "vite": "^6.0.7",
     "vitest": "^2.1.8"
-  }
+  },
+  "patchedDependencies": {
+    "@sveltejs/kit@2.66.0": "patches/@sveltejs__kit@2.66.0.patch"
+  },
+  "trustedDependencies": [
+    "esbuild",
+    "@playwright/test"
+  ]
 }
