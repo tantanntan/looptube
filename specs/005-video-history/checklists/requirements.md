@@ -6,7 +6,7 @@
 
 ## Content Quality
 
-- [x] No implementation details (languages, frameworks, APIs)
+- [x] No implementation details (languages, frameworks, APIs) — `HistoryPort` 言及は抽象概念として許容。`localStorage` 記述はビジネス要件（未認証ユーザーへの説明）として残す
 - [x] Focused on user value and business needs
 - [x] Written for non-technical stakeholders
 - [x] All mandatory sections completed

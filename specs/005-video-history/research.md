@@ -55,7 +55,7 @@ function normalizeVideoId(input: string): string {
 
 **Decision**: `addedAt` が最も古いアイテムを削除（FIFO）。
 
-**Rationale**: 仕様書の「最も古い履歴アイテムが自動的に削除される」に準拠。`addedAt` で昇順ソートした末尾を削除。
+**Rationale**: 仕様書の「最も古い履歴アイテムが自動的に削除される」に準拠。`addedAt` で昇順ソート（古い順）した配列の先頭が最古なので、先頭を削除する。降順ソートの場合は末尾が最古なので末尾を削除するが、実装では「降順の先頭に追加して末尾を捨てる」パターンではなく、`VideoHistoryRepository.add()` 内で昇順配列を slice して明示的に最古を除去する。
 
 ---
 
@@ -63,4 +63,4 @@ function normalizeVideoId(input: string): string {
 
 **Decision**: YouTube のサムネイル URL は `https://img.youtube.com/vi/{videoId}/mqdefault.jpg` の形式で構成可能。動画 ID が確定した時点で確定的に生成できるため、外部 API 呼び出しは不要。
 
-**Rationale**: IFrame Player API でサムネイルを取得する API は存在せず、`oEmbed` 等への別途リクエストが必要になる。一方、動画 ID から直接 URL を組み立てる方法は確定的で高速。仕様書の「取得できない場合は null」は、将来の非 YouTube 動画への拡張を想定した設計として保持する。
+**Rationale**: IFrame Player API でサムネイルを取得する API は存在せず、`oEmbed` 等への別途リクエストが必要になる。一方、動画 ID から直接 URL を組み立てる方法は確定的で高速。`thumbnailUrl` は `string | null` ではなく常に `string` とし、`buildThumbnailUrl(videoId)` で必ず生成する（YAGNI：将来の非 YouTube 対応は型変更が必要になる時点で対処する）。

@@ -15,7 +15,7 @@
 | 状態管理 | Svelte 5 `$state` rune（`+page.svelte` で保持） |
 | 永続化 | `localStorage`（`LocalHistoryAdapter` 経由） |
 | テスト | Vitest + `InMemoryHistoryAdapter`（ブラウザ依存排除） |
-| i18n | ParaglideJS（`ja.json` / `en.json`） |
+| i18n | 既存の `createTranslator`（`ja.json` / `en.json` に `history.*` キーを追加） |
 | ストレージキー | `looptube:history` |
 | 最大件数 | 50 件 |
 
@@ -50,10 +50,10 @@
 `src/lib/ports/HistoryPort.ts`
 
 ```typescript
-interface HistoryItem { id, url, title, thumbnailUrl, addedAt: Date }
+interface HistoryItem { id, url, title, thumbnailUrl: string, addedAt: Date }
 interface HistoryPort {
   getAll(): Promise<HistoryItem[]>;
-  add(item: HistoryItem): Promise<void>;
+  replaceAll(items: HistoryItem[]): Promise<void>; // 全件原子的置き換え
   remove(id: string): Promise<void>;
   clear(): Promise<void>;
 }
@@ -83,12 +83,13 @@ interface HistoryPort {
 
 - コンストラクタ: `HistoryPort` を DI
 - `add(item)`:
-  1. `getAll()` で現在の一覧を取得
+  1. `port.getAll()` で現在の一覧を取得
   2. 同 `id` のアイテムを除去（deduplication）
-  3. 先頭に追加、50 件を超えた分を末尾から削除
-  4. `port.add()` ではなく全件 upsert（→ ポートの責務を `add` 1件に限定するか全件保存にするか設計に依存。全件保存で統一する）
+  3. 先頭に新アイテムを追加
+  4. 51 件以上なら `addedAt` 昇順ソートの先頭（= 最古）を削除して 50 件に切り詰める
+  5. `port.replaceAll(updatedItems)` で全件を原子的に保存
 - `getAll()`: `port.getAll()` を `addedAt` 降順でソートして返す
-- `remove(id)`: `port.remove(id)` に委譲
+- `remove(id)`: `port.getAll()` → filter → `port.replaceAll()` に委譲（Adapter 側に削除ロジックを持たせない）
 - `buildHistoryItem(videoId, url, title?)`: `HistoryItem` を組み立てるファクトリ
 
 ---

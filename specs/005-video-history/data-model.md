@@ -9,10 +9,12 @@ interface HistoryItem {
   id: string;           // YouTube 動画 ID（deduplication キー）
   url: string;          // ユーザーが最後に入力した URL（短縮 URL 等、入力値をそのまま保存）
   title: string;        // 動画タイトル（取得できない場合は空文字 ""）
-  thumbnailUrl: string; // サムネイル URL（動画 ID から構成: img.youtube.com/vi/{id}/mqdefault.jpg）
+  thumbnailUrl: string; // サムネイル URL（buildThumbnailUrl(id) で常に確定的に生成。null なし）
   addedAt: Date;        // 履歴追加日時
 }
 ```
+
+**`thumbnailUrl` 設計方針**: YouTube 動画 ID が確定した時点で `https://img.youtube.com/vi/{id}/mqdefault.jpg` を確定的に生成できるため、常に `string` 型とする。`null` は存在しない。将来 YouTube 以外の動画に対応する場合は、その時点で型を見直す（型変更を後回しにする YAGNI 判断）。
 
 **Uniqueness**: `id` フィールド（YouTube 動画 ID）が deduplication キー。同じ `id` を持つアイテムは1件のみ存在する。
 
@@ -27,8 +29,8 @@ interface HistoryItemStorage {
   id: string;
   url: string;
   title: string;
-  thumbnailUrl: string;
-  addedAt: string; // ISO 8601 文字列
+  thumbnailUrl: string; // null なし（常に生成済み）
+  addedAt: string;      // ISO 8601 文字列
 }
 ```
 
@@ -39,12 +41,14 @@ interface HistoryItemStorage {
 
 ```typescript
 interface HistoryPort {
-  getAll(): Promise<HistoryItem[]>;           // addedAt 降順で全件返す
-  add(item: HistoryItem): Promise<void>;      // upsert (id 一致で先頭へ移動)
-  remove(id: string): Promise<void>;          // id で削除（存在しない場合は no-op）
-  clear(): Promise<void>;                     // 全件削除
+  getAll(): Promise<HistoryItem[]>;                 // 全件返す（順序は実装依存）
+  replaceAll(items: HistoryItem[]): Promise<void>;  // 全件を渡された配列で置き換え（原子的）
+  remove(id: string): Promise<void>;                // id で削除（存在しない場合は no-op）
+  clear(): Promise<void>;                           // 全件削除
 }
 ```
+
+**責務分担の方針**: ビジネスルール（重複排除・上限・ソート）はすべて `VideoHistoryRepository` が担う。`HistoryPort` は純粋な CRUD 操作のみを担い、ビジネスロジックを持たない。`replaceAll` により Repository は変更後の配列全体を Adapter に渡すだけでよく、Adapter 側に並び替えや上限制御が漏れない。
 
 ## VideoHistoryRepository（ビジネスロジック層）
 
@@ -53,7 +57,7 @@ interface HistoryPort {
 | ルール | 実装場所 |
 |--------|---------|
 | 同一動画 ID の重複排除（先頭へ移動） | `add()` メソッド内 |
-| 最大 50 件を超えたら最古を削除 | `add()` メソッド内 |
+| 最大 50 件を超えたら最古（`addedAt` 昇順の先頭）を削除 | `add()` メソッド内 |
 | `addedAt` 降順ソート | `getAll()` 戻り値 |
 
 ## YouTubeUrlParser ユーティリティ
