@@ -229,6 +229,8 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 		const id = normalizeVideoId(urlInput);
 		if (!id) return;
 		videoId = id;
+		machine.clearAll();
+		machineState = machine.getState();
 		// Explicitly load the video; don't rely solely on the $effect in VideoPlayer
 		await player.loadVideo(id);
 		const url = new URL($page.url.toString());
