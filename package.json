@@ -14,7 +14,7 @@
     "test:unit": "vitest run tests/unit --passWithNoTests",
     "test:unit:watch": "vitest tests/unit",
     "test:integration": "vitest run tests/integration --passWithNoTests",
-    "test:e2e": "playwright test"
+    "test:e2e": "node node_modules/@playwright/test/cli.js test"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",

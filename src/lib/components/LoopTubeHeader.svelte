@@ -27,7 +27,7 @@
 			value={urlInput}
 			oninput={(e) => onUrlInput?.((e.target as HTMLInputElement).value)}
 			placeholder="YouTube URL または 動画ID"
-			aria-label="YouTube URL または 動画ID"
+			aria-label="YouTube URL or Video ID"
 		/>
 		<button type="submit" class="lt-url-submit">読み込む</button>
 	</form>
@@ -127,5 +127,17 @@
 
 	.lt-url-submit:hover {
 		background: var(--color-accent-soft);
+	}
+
+	@media (max-width: 700px) {
+		.lt-header {
+			flex-direction: column;
+			align-items: stretch;
+			gap: var(--space-3);
+		}
+
+		.lt-url-form {
+			max-width: 100%;
+		}
 	}
 </style>
