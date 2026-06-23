@@ -62,7 +62,11 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Required**: plan.md (tech stack, libraries, structure), spec.md (user stories with priorities)
    - **Optional**: data-model.md (entities), contracts/ (interface contracts), research.md (decisions), quickstart.md (test scenarios)
    - **IF EXISTS**: Load `.specify/memory/constitution.md` for project principles and governance constraints
+   - **IF EXISTS**: Load repository `package.json` and `CLAUDE.md` for script names,
+     package manager, Svelte/i18n conventions, and project-specific command constraints
    - Note: Not all projects have all documents. Generate tasks based on what's available.
+   - If the constitution mandates TDD/test-first development, record that tests are REQUIRED,
+     not optional, for all behavior-changing work across domain, adapter, route, and UI tasks.
 
 3. **Execute task generation workflow**:
    - Load plan.md and extract tech stack, libraries, project structure
@@ -74,6 +78,9 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Generate dependency graph showing user story completion order
    - Create parallel execution examples per user story
    - Validate task completeness (each user story has all needed tasks, independently testable)
+   - Validate artifact consistency: task method names, interface names, adapter responsibilities,
+     entity fields, fallback behavior, storage keys, and raw-vs-normalized rules must match
+     spec.md, research.md, data-model.md, and plan.md
 
 4. **Generate tasks.md**: Read the tasks template from TASKS_TEMPLATE (from the JSON output above) and use it as structure. If TASKS_TEMPLATE is empty, fall back to `.specify/templates/tasks-template.md`. Fill with:
    - Correct feature name from plan.md
@@ -140,7 +147,7 @@ The tasks.md should be immediately executable - each task must be specific enoug
 
 **CRITICAL**: Tasks MUST be organized by user story to enable independent implementation and testing.
 
-**Tests are OPTIONAL**: Only generate test tasks if explicitly requested in the feature specification or if user requests TDD approach.
+**Tests are constitution-driven**: If the constitution mandates TDD or test-first development, test tasks are REQUIRED before implementation tasks. Only treat tests as optional when the constitution does not require them and the user/spec does not request them.
 
 ### Checklist Format (REQUIRED)
 
@@ -204,12 +211,40 @@ Every task MUST strictly follow this format:
 - **Phase 1**: Setup (project initialization)
 - **Phase 2**: Foundational (blocking prerequisites - MUST complete before user stories)
 - **Phase 3+**: User Stories in priority order (P1, P2, P3...)
-  - Within each story: Tests (if requested) → Models → Services → Endpoints → Integration
+  - Within each story: Tests (required when constitution mandates TDD) → Models → Services → Endpoints → Integration
   - Each phase should be a complete, independently testable increment
 - **Final Phase**: Polish & Cross-Cutting Concerns
+
+### Consistency Validation Rules
+
+Before writing the final tasks.md, perform these checks and fix any failure:
+
+1. **Interface contract lockstep**: Every method named in tasks must exist in plan.md and
+   data-model.md with the same responsibility. Do not mix obsolete names such as an old
+   `add()` method with a newer `replaceAll()` contract.
+2. **Adapter/repository responsibility split**: If the plan says business rules live in a
+   repository, adapter tasks must not implement those business rules; if the port exposes a
+   method, tasks must either use it or remove it from the port contract.
+3. **Field behavior lockstep**: Data field nullability, fallback behavior, generated-vs-
+   fetched values, raw-vs-normalized storage, and ordering/retention rules must match all
+   artifacts.
+4. **MVP boundary check**: The P1/MVP story must include every task needed to satisfy its
+   Independent Test, including page/route integration where the test exercises the app.
+5. **Parallel marker check**: Remove `[P]` from any task that depends on an incomplete task,
+   edits the same file as another same-phase task, or consumes a not-yet-created artifact.
+6. **Constitution check**: Every constitution MUST must have task coverage or an explicit,
+   documented exception in plan.md.
+7. **Command lockstep**: Validation/dev commands in tasks must come from `package.json`
+   and `CLAUDE.md`. Do not generate `npm run test`, `bun run test`, or unprefixed `pnpm`
+   commands unless they are valid in this repository.
+8. **Svelte/i18n task coverage**: Every task that creates or modifies a `.svelte` file
+   must include the repository's `<style></style>` SSR requirement and must map all
+   user-facing text to locale-file tasks unless the text is an allowed brand/token string.
 
 ## Done When
 
 - [ ] tasks.md generated with all phases, task IDs, and file paths
+- [ ] Constitution-driven test-first requirements reflected in task order
+- [ ] Cross-artifact consistency validation completed with no unresolved HIGH/CRITICAL issue
 - [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
 - [ ] Completion reported to user with task count, story breakdown, and MVP scope

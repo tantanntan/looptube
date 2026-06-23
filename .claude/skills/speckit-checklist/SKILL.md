@@ -160,6 +160,8 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Non-Functional Requirements** (Performance, Security, Accessibility, etc. - are they specified?)
    - **Dependencies & Assumptions** (Are they documented and validated?)
    - **Ambiguities & Conflicts** (What needs clarification?)
+   - **Cross-Artifact Consistency** (Do spec.md, plan.md, data-model.md, research.md,
+     and tasks.md agree on contracts, data behavior, terminology, and task sequencing?)
 
    **HOW TO WRITE CHECKLIST ITEMS - "Unit Tests for English"**:
 
@@ -200,6 +202,8 @@ You **MUST** consider the user input before proceeding (if not empty).
    Consistency:
    - "Do navigation requirements align across all pages? [Consistency, Spec §FR-10]"
    - "Are card component requirements consistent between landing and detail pages? [Consistency]"
+   - "Are interface method names and responsibilities consistent across plan.md, data-model.md, and tasks.md? [Cross-Artifact Consistency]"
+   - "Are data field nullability, fallback behavior, and raw-vs-normalized storage rules consistent across all artifacts? [Cross-Artifact Consistency]"
 
    Coverage:
    - "Are requirements defined for zero-state scenarios (no episodes)? [Coverage, Edge Case]"
@@ -219,6 +223,9 @@ You **MUST** consider the user input before proceeding (if not empty).
    **Traceability Requirements**:
    - MINIMUM: ≥80% of items MUST include at least one traceability reference
    - Each item should reference: spec section `[Spec §X.Y]`, or use markers: `[Gap]`, `[Ambiguity]`, `[Conflict]`, `[Assumption]`
+   - For cross-artifact items, reference the artifact names directly (for example
+     `[plan.md/data-model.md/tasks.md]`) and phrase the item as a documentation
+     consistency check, not an implementation behavior check.
    - If no ID system exists: "Is a requirement & acceptance criteria ID scheme established? [Traceability]"
 
    **Surface & Resolve Issues** (Requirements Quality Problems):

@@ -108,6 +108,11 @@ Load only the minimal necessary context from each artifact:
 
 - Load `.specify/memory/constitution.md` for principle validation
 
+**From repository guidance:**
+
+- Load `package.json` and `CLAUDE.md` for package manager, script names, Svelte/i18n
+  constraints, and project-specific command rules
+
 ### 3. Build Semantic Models
 
 Create internal representations (do not include raw artifacts in output):
@@ -116,6 +121,10 @@ Create internal representations (do not include raw artifacts in output):
 - **User story/action inventory**: Discrete user actions with acceptance criteria
 - **Task coverage mapping**: Map each task to one or more requirements or stories (inference by keyword / explicit reference patterns like IDs or key phrases)
 - **Constitution rule set**: Extract principle names and MUST/SHOULD normative statements
+- **Interface contract inventory**: Extract port/interface names, method names, adapter names,
+  and stated responsibilities from plan.md, data-model.md, research.md, and tasks.md.
+- **Data behavior inventory**: Extract entity fields plus type/nullability, fallback behavior,
+  generated-vs-fetched rules, raw-vs-normalized storage, ordering, and retention limits.
 
 ### 4. Detection Passes (Token-Efficient Analysis)
 
@@ -141,6 +150,8 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 
 - Any requirement or plan element conflicting with a MUST principle
 - Missing mandated sections or quality gates from constitution
+- Any new port/interface/storage abstraction marked PASS without matching a named
+  constitution boundary or an explicit exception rationale
 
 #### E. Coverage Gaps
 
@@ -154,6 +165,18 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - Data entities referenced in plan but absent in spec (or vice versa)
 - Task ordering contradictions (e.g., integration tasks before foundational setup tasks without dependency note)
 - Conflicting requirements (e.g., one requires Next.js while other specifies Vue)
+- Interface contract drift: methods or responsibilities differ across plan.md,
+  data-model.md, research.md, and tasks.md
+- Stale implementation names after design changes (e.g., tasks/tests still reference a
+  removed method name)
+- Data behavior drift: nullability/fallback/generated-vs-fetched/raw-vs-normalized rules
+  differ across artifacts
+- MVP boundary drift: a user story's Independent Test requires integration work that is
+  postponed to a later story/phase
+- Parallel marker drift: `[P]` tasks that also declare dependencies or edit/consume the same
+  incomplete artifact
+- Svelte/i18n drift: UI tasks create or modify `.svelte` files without style-block,
+  i18n-key, Svelte 5 syntax, or validation-command coverage required by repository rules
 
 ### 5. Severity Assignment
 

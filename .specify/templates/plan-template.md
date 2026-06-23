@@ -42,6 +42,38 @@
 
 [Gates determined based on constitution file]
 
+<!--
+  REQUIRED VALIDATION:
+  - Do not mark PASS when the plan introduces a new abstraction, storage boundary,
+    framework, runtime, or testing shortcut that is not explicitly allowed by the
+    constitution. Record it as a violation/exception in Complexity Tracking instead.
+  - If a constitution principle names a specific port/interface, either use that
+    interface or document the approved reason for a domain-specific alternative.
+  - Re-check the final plan, research.md, data-model.md, and task assumptions for
+    stale method names, obsolete fallback behavior, and terminology drift before
+    reporting the plan complete.
+-->
+
+## Artifact Consistency Checklist
+
+Before `/speckit-tasks`, verify the generated artifacts agree on the following:
+
+- [ ] Spec, research, plan, and data-model use the same canonical terms for each entity,
+      interface, adapter, and user-facing concept.
+- [ ] Every persistence boundary lists one authoritative method contract; adapters,
+      repositories, tests, and tasks use the same method names and responsibilities.
+- [ ] Entity fields have consistent type/nullability/fallback/storage rules across
+      spec.md and data-model.md.
+- [ ] Any raw-vs-normalized value decision is explicit and consistent everywhere it is
+      referenced.
+- [ ] Retention/order/limit rules are expressed with an unambiguous algorithm and mapped
+      to tests/tasks.
+- [ ] Any implementation detail that remains in spec.md is intentionally documented as a
+      product constraint or assumption, not an accidental leak.
+- [ ] Package manager, test commands, check commands, and dev-server commands match
+      `package.json` and `CLAUDE.md`; do not invent npm/pnpm commands when Bun scripts
+      are the repository source of truth.
+
 ## Project Structure
 
 ### Documentation (this feature)

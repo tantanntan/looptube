@@ -1,10 +1,14 @@
 <script lang="ts">
+	import { createTranslator, type Locale } from '$lib/i18n/index.js';
+
 	type Props = {
 		urlInput?: string;
 		isPlaying?: boolean;
 		submitDisabled?: boolean;
 		onUrlInput?: (val: string) => void;
 		onUrlSubmit?: () => void;
+		locale?: Locale;
+		onHistoryClick?: () => void;
 	};
 
 	let {
@@ -12,8 +16,12 @@
 		isPlaying = false,
 		submitDisabled = false,
 		onUrlInput,
-		onUrlSubmit
+		onUrlSubmit,
+		locale = 'en',
+		onHistoryClick = () => {}
 	}: Props = $props();
+
+	const t = $derived(createTranslator(locale));
 
 	function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
@@ -63,6 +71,28 @@
 			disabled={submitDisabled}
 		><span class="lt-url-submit-label">読み込む</span></button>
 	</form>
+	<button
+		type="button"
+		class="lt-history-btn"
+		onclick={onHistoryClick}
+		aria-label={t('history.button_label')}
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="20"
+			height="20"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			aria-hidden="true"
+		>
+			<circle cx="12" cy="12" r="10" />
+			<polyline points="12 6 12 12 16 14" />
+		</svg>
+	</button>
 </header>
 
 <style>
@@ -290,6 +320,37 @@
 			animation: none;
 		}
 	}
+
+	.lt-history-btn {
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		background: transparent;
+		border: 1px solid var(--color-border);
+		border-radius: 50%;
+		color: var(--color-text-muted, currentColor);
+		cursor: pointer;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease,
+			background 0.15s ease;
+	}
+
+	.lt-history-btn:hover {
+		color: var(--color-text, currentColor);
+		border-color: var(--color-text-muted, currentColor);
+		background: var(--color-surface-hover, rgba(255, 255, 255, 0.06));
+	}
+
+	.lt-history-btn:focus-visible {
+		outline: 2px solid var(--color-accent, currentColor);
+		outline-offset: 2px;
+	}
+
 
 	@media (max-width: 700px) {
 		.lt-header {

@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/004-fix-shared-url/plan.md
+at specs/005-video-history/plan.md
 <!-- SPECKIT END -->
 
 ## Svelte MCP Tools
@@ -12,6 +12,34 @@ You have access to the Svelte MCP server (`sveltejs/ai-tools`). Follow these rul
 2. **After `list-sections`, call `get-documentation`** for ALL sections relevant to the task (use the `use_cases` field to judge relevance).
 3. **Always run `svelte-autofixer`** on any Svelte code before sending it to the user. Keep calling it until no issues or suggestions remain.
 4. **Offer `playground-link`** after completing code — but only after explicit user confirmation, and never when the code has already been written to project files.
+
+## Spec Kit Artifact Discipline
+
+When creating or updating Spec Kit artifacts (`spec.md`, `plan.md`, `research.md`,
+`data-model.md`, `tasks.md`, or checklists):
+
+1. Read `.specify/memory/constitution.md` before marking any Constitution Check as PASS.
+   If an approach needs a domain-specific persistence port, document why it is materially
+   different from existing persistence ports and define one authoritative method contract.
+2. Keep data contracts in lockstep across all artifacts: field type/nullability, fallback
+   behavior, generated-vs-fetched values, raw-vs-normalized storage, ordering, limits, and
+   storage keys must not drift.
+3. Treat TDD as mandatory for behavior changes. `tasks.md` must put RED test tasks before
+   the implementation task they validate, including domain logic, adapters, routes, and UI.
+4. Use the repository source of truth for commands: `package.json` says Bun is primary.
+   Generated plans/tasks must use existing script names such as `bun run test:unit`,
+   targeted `bunx vitest run <file>`, and `bun run check`; never invent `bun run test` or
+   unprefixed `pnpm` commands.
+5. For Svelte tasks, require Svelte 5 syntax, a `<style></style>` block in every component,
+   and locale-file entries for all user-facing text unless explicitly exempted.
+6. Mark `[P]` only when a task has no dependency on incomplete work, touches a different
+   file, and does not consume an artifact that has not been created.
+7. The P1/MVP story must include every integration task required by its Independent Test.
+   Do not defer page/route wiring to a later story if the P1 test exercises the app.
+8. Before implementation, run or manually perform the `/speckit-analyze` consistency pass.
+   Stop on HIGH/CRITICAL issues such as stale method names, contradictory port
+   responsibilities, mismatched fallback/nullability rules, or unexplained constitution
+   exceptions.
 
 <!-- headroom:learn:start -->
 ## Headroom Learned Patterns

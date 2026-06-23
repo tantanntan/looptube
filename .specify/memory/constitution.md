@@ -1,20 +1,22 @@
 <!-- SYNC_IMPACT_REPORT
-Version change: 1.0.0 → 1.1.0
+Version change: 1.1.0 → 2.0.0
 Modified principles:
-  - IV. Pure Domain Logic: removed React-specific language; replaced with Svelte
-  - V. StoragePort Abstraction: expanded to cover DB adapter + localStorage fallback pattern
-  - VI. Dependency Injection: added explicit TimerPort and RouterPort named ports
-  - VIII. Coverage Gate: added ABLoopStateMachine and SegmentRepository by canonical name
+  - Tech Stack: package manager changed from npm/pnpm to Bun to match package.json and current repository scripts
+  - V. StoragePort Abstraction → Persistence Port Abstractions: clarified that domain-specific persistence ports are allowed when responsibilities differ, while preserving port/adapter and DI requirements
+  - VI. Dependency Injection: expanded persistence boundary wording to cover domain-specific persistence ports
 Added sections:
-  - Tech Stack (non-negotiable)
-  - Design Principles
-  - API & Data Persistence
-  - Dependency Boundary diagram added to Boundary Contracts
+  - Spec Kit Artifact Consistency expectations propagated to templates/skills
 Removed sections: None
 Templates requiring updates:
-  ✅ .specify/templates/plan-template.md — Constitution Check section is generic; no change needed
-  ✅ .specify/templates/spec-template.md — Technology-agnostic; no change needed
-  ✅ .specify/templates/tasks-template.md — Test-first ordering already enforced; no change needed
+  ✅ .specify/templates/plan-template.md — added artifact consistency and constitution-sensitive boundary checks
+  ✅ .specify/templates/spec-template.md — added data contract consistency guard
+  ✅ .specify/templates/tasks-template.md — added constitution-driven TDD and cross-artifact validation
+  ✅ .specify/templates/checklist-template.md — added cross-artifact consistency checklist examples
+  ✅ .specify/workflows/speckit/workflow.yml — added analyze gate before implementation
+  ✅ .specify/workflows/workflow-registry.json — updated workflow metadata
+  ✅ .claude/skills/speckit-*.md — added generation/analysis/implementation preflight rules
+  ✅ .claude/agents/svelte-file-editor.md and Svelte skills — added repo-specific Svelte/i18n/style validation rules
+  ✅ CLAUDE.md — added Spec Kit artifact discipline and command lockstep rules
 Deferred TODOs: None
 -->
 
@@ -30,10 +32,13 @@ The following technology choices are **non-negotiable** for this project:
 | Language | TypeScript — mandatory across all layers, strict mode |
 | Unit / Integration testing | Vitest (Node environment) |
 | E2E testing | Playwright |
-| Package manager | npm or pnpm |
+| Package manager | Bun (`package.json#packageManager`) |
 
-No alternative frameworks, runtimes, or languages may be introduced without amending this
-constitution. TypeScript `strict` mode MUST be enabled in `tsconfig.json`.
+No alternative frameworks, runtimes, languages, or primary package managers may be
+introduced without amending this constitution. TypeScript `strict` mode MUST be enabled in
+`tsconfig.json`. Existing npm-compatible scripts MUST be run through Bun by default; pnpm
+may be used only when a documented repository command requires it, and then with the
+project-specific PATH prefix recorded in `CLAUDE.md`.
 
 ## Design Principles
 
@@ -97,22 +102,33 @@ following hard constraints:
 These modules MUST be fully unit-testable with Vitest in a standard Node.js environment
 without jsdom, happy-dom, or any browser runtime.
 
-### V. StoragePort Abstraction
+### V. Persistence Port Abstractions
 
-All persistence access MUST be routed through a `StoragePort` interface. The two
-production implementations are:
+All persistence access MUST be routed through an explicit port interface defined under
+`src/lib/ports/`. The existing `StoragePort` is the canonical persistence boundary for
+saved A-B loop segments. Additional domain-specific persistence ports MAY be introduced
+when the data lifecycle, identity, or operations are materially different from segment
+persistence.
+
+Every persistence port, including `StoragePort` and any domain-specific alternatives,
+MUST satisfy the same boundary rules:
+
+- The interface lives in `src/lib/ports/`.
+- Production adapters live in `src/lib/adapters/`.
+- Test environments inject an in-memory fake from `src/lib/fakes/`.
+- Business-logic modules MUST NOT reference `window.localStorage`, any database client,
+  or any SvelteKit server utility directly.
+- The port interface MUST be location-agnostic: it MUST NOT expose whether storage is
+  local or remote.
+- The feature plan/data model MUST document why an existing persistence port is not being
+  reused and must define one authoritative method contract for the new port.
+
+For segment persistence, the current production implementations remain:
 
 - **`DatabaseStorageAdapter`**: Used for authenticated users; persists segments
   server-side via SvelteKit API routes.
 - **`LocalStorageAdapter`**: Used for unauthenticated users; persists segments
   client-side in `localStorage`.
-
-Test environments MUST inject an `InMemoryStorageAdapter` that satisfies `StoragePort`.
-Business-logic modules MUST NOT reference `window.localStorage`, any database client,
-or any SvelteKit server utility directly.
-
-The `StoragePort` interface MUST be location-agnostic: it MUST NOT expose whether
-storage is local or remote.
 
 ### VI. Dependency Injection
 
@@ -123,7 +139,7 @@ boundaries are:
 | Port | Replaces |
 |---|---|
 | `VideoPlayerPort` | YouTube IFrame Player API |
-| `StoragePort` | Database (SvelteKit server) + `localStorage` fallback |
+| `StoragePort` and domain-specific persistence ports | Database (SvelteKit server) + `localStorage` fallback |
 | `TimerPort` | `setInterval`, `clearInterval`, `setTimeout` |
 | `RouterPort` | SvelteKit `goto`, `page` store, URL search params |
 
@@ -172,9 +188,10 @@ equivalent). CI MUST fail and block merge if this gate is not met.
 
 ## Boundary Contracts
 
-All port interfaces (`VideoPlayerPort`, `StoragePort`, `TimerPort`, `RouterPort`) MUST be
-defined in a dedicated `src/lib/ports/` directory and treated as the public API contract
-of the domain layer. Adapter implementations MUST reside in `src/lib/adapters/`.
+All port interfaces (`VideoPlayerPort`, `StoragePort`, domain-specific persistence ports,
+`TimerPort`, `RouterPort`) MUST be defined in a dedicated `src/lib/ports/` directory and
+treated as the public API contract of the domain layer. Adapter implementations MUST
+reside in `src/lib/adapters/`.
 
 **Dependency boundary (enforced by ESLint import rules)**:
 
@@ -185,12 +202,13 @@ of the domain layer. Adapter implementations MUST reside in `src/lib/adapters/`.
                         │ injects ports
 ┌───────────────────────▼──────────────────────────────┐
 │            Application Core (pure TypeScript)        │
-│   ABLoopStateMachine / SegmentRepository             │
+│   ABLoopStateMachine / SegmentRepository / other     │
+│   pure repositories                                  │
 │   ← no DOM, no Svelte, no YouTube SDK, no DB client  │
 └──────────┬─────────────────────────┬─────────────────┘
-           │ VideoPlayerPort         │ StoragePort / TimerPort / RouterPort
-    [YouTubePlayerAdapter]    [DatabaseStorageAdapter / LocalStorageAdapter]
-    [FakeVideoPlayer (test)]  [InMemoryStorageAdapter (test)]
+           │ VideoPlayerPort         │ Persistence ports / TimerPort / RouterPort
+    [YouTubePlayerAdapter]    [Database/Local adapters per port]
+    [FakeVideoPlayer (test)]  [In-memory fakes per port]
 ```
 
 Any change to a port interface is a **breaking change** and MUST:
@@ -242,4 +260,4 @@ deviation (with a linked tracking issue for resolution).
 **Runtime guidance**: For day-to-day development workflow and agent-specific instructions,
 refer to `CLAUDE.md`.
 
-**Version**: 1.1.0 | **Ratified**: 2026-06-22 | **Last Amended**: 2026-06-22
+**Version**: 2.0.0 | **Ratified**: 2026-06-22 | **Last Amended**: 2026-06-24
