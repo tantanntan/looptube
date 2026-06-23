@@ -56,6 +56,7 @@
 		"button_label": "History",
 		"drawer_title": "Watch History",
 		"empty": "No history yet.",
-		"delete_label": "Remove from history"
+		"delete_label": "Remove from history",
+		"close_label": "Close"
 	}
 }

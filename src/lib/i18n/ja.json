@@ -56,6 +56,7 @@
 		"button_label": "履歴",
 		"drawer_title": "視聴履歴",
 		"empty": "履歴はまだありません",
-		"delete_label": "この動画を履歴から削除"
+		"delete_label": "この動画を履歴から削除",
+		"close_label": "閉じる"
 	}
 }

@@ -29,7 +29,7 @@
     >
       <header class="lt-history-drawer__header">
         <h2 class="lt-history-drawer__title">{t('history.drawer_title')}</h2>
-        <button class="lt-history-drawer__close" onclick={onClose} aria-label="Close">×</button>
+        <button class="lt-history-drawer__close" onclick={onClose} aria-label={t('history.close_label')}>×</button>
       </header>
       {#if items.length === 0}
         <p class="lt-history-drawer__empty">{t('history.empty')}</p>

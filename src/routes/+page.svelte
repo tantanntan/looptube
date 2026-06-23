@@ -59,6 +59,7 @@
 	let historyRepository: VideoHistoryRepository | null = null;
 	let historyItems = $state<HistoryItem[]>([]);
 	let historyOpen = $state(false);
+	let pendingHistoryAdd: { id: string; url: string } | null = null;
 	let spVideoOpen = $state(false);
 	let videoTitle = $state('');
 	let hasPlayedCurrentVideo = $state(false);
@@ -192,6 +193,14 @@
 				const title = ytPlayer.getVideoTitle();
 				if (title) videoTitle = title;
 			}
+			if (state === 'PLAYING' && pendingHistoryAdd && historyRepository) {
+				const pending = pendingHistoryAdd;
+				pendingHistoryAdd = null;
+				const item = historyRepository.buildHistoryItem(pending.id, pending.url, videoTitle);
+				historyRepository.add(item).then(() => {
+					historyRepository!.getAll().then((items) => { historyItems = items; });
+				});
+			}
 			if (state === 'BUFFERING' || state === 'PLAYING') {
 				videoReady = true;
 			}
@@ -258,11 +267,7 @@
 		url.searchParams.set('v', id);
 		history.replaceState(history.state, '', url.toString());
 		await loadSegments();
-		if (historyRepository) {
-			const item = historyRepository.buildHistoryItem(id, urlInput, videoTitle);
-			await historyRepository.add(item);
-			historyItems = await historyRepository.getAll();
-		}
+		pendingHistoryAdd = { id, url: urlInput };
 	}
 
 	function handleHistorySelect(item: HistoryItem) {
