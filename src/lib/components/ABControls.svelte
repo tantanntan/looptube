@@ -6,6 +6,7 @@
 	type Props = {
 		pointA: number | null;
 		pointB: number | null;
+		videoReady?: boolean;
 		activePoint?: 'a' | 'b' | null;
 		fps?: number;
 		t?: (key: string) => string;
@@ -21,6 +22,7 @@
 	let {
 		pointA,
 		pointB,
+		videoReady = false,
 		activePoint = null,
 		fps = 30,
 		t = (k: string) => k,
@@ -99,7 +101,14 @@
 			</div>
 		{/if}
 		<div class="ab-card-actions">
-			<button type="button" class="ab-btn-set ab-btn-set-a" onclick={onSetA}>Set A</button>
+			<button
+				type="button"
+				class="ab-btn-set ab-btn-set-a"
+				class:ab-btn-glow-active={videoReady && pointA === null}
+				onclick={onSetA}
+			>
+				<span class="ab-btn-set-label">Set A</span>
+			</button>
 			{#if pointA !== null}
 				<button type="button" class="ab-btn-clear" onclick={onClearA} aria-label="Clear A"
 					>✕</button
@@ -138,7 +147,14 @@
 			</div>
 		{/if}
 		<div class="ab-card-actions">
-			<button type="button" class="ab-btn-set ab-btn-set-b" onclick={onSetB}>Set B</button>
+			<button
+				type="button"
+				class="ab-btn-set ab-btn-set-b"
+				class:ab-btn-glow-active={videoReady && pointA !== null && pointB === null}
+				onclick={onSetB}
+			>
+				<span class="ab-btn-set-label">Set B</span>
+			</button>
 			{#if pointB !== null}
 				<button type="button" class="ab-btn-clear" onclick={onClearB} aria-label="Clear B"
 					>✕</button
@@ -260,6 +276,9 @@
 	}
 
 	.ab-btn-set {
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
 		flex: 1;
 		padding: 0 var(--space-2);
 		height: 28px;
@@ -272,6 +291,47 @@
 		font-size: 0.75rem;
 		font-weight: 600;
 		cursor: pointer;
+	}
+
+	.ab-btn-set::before {
+		content: '';
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		z-index: 0;
+		width: 180%;
+		aspect-ratio: 1;
+		border-radius: 999px;
+		background: radial-gradient(circle, var(--color-accent) 0%, transparent 62%);
+		opacity: 0;
+		filter: brightness(70%);
+		transform: translate(-50%, -50%) scale(0.22);
+		transform-origin: center;
+		pointer-events: none;
+	}
+
+	.ab-btn-glow-active::before {
+		animation: ab-btn-glow 2500ms ease-in-out infinite;
+	}
+
+	.ab-btn-set-label {
+		position: relative;
+		z-index: 1;
+	}
+
+	@keyframes ab-btn-glow {
+		0%,
+		100% {
+			opacity: 0.16;
+			filter: brightness(70%);
+			transform: translate(-50%, -50%) scale(0.22);
+		}
+
+		50% {
+			opacity: 0.72;
+			filter: brightness(100%);
+			transform: translate(-50%, -50%) scale(1);
+		}
 	}
 
 	.ab-btn-set-a:hover {
@@ -326,5 +386,11 @@
 	.ab-btn-clear-all:hover {
 		color: var(--color-text);
 		border-color: var(--color-text-muted);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ab-btn-glow-active::before {
+			animation: none;
+		}
 	}
 </style>

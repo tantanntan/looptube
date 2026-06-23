@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import { ABLoopStateMachine } from '$lib/core/ABLoopStateMachine.js';
 	import { UrlSerializer } from '$lib/core/UrlSerializer.js';
-import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
+	import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 	import { KeyboardHandler } from '$lib/core/KeyboardHandler.js';
 	import { SegmentRepository } from '$lib/core/SegmentRepository.js';
 	import { FakeVideoPlayer } from '$lib/fakes/FakeVideoPlayer.js';
@@ -26,6 +26,8 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 	import type { PageData } from './$types';
 
 	const FPS = 30;
+	const SEEK_SHORT_SECONDS = 2;
+	const SEEK_LONG_SECONDS = 5;
 
 	let { data }: { data: PageData } = $props();
 	const t = $derived(createTranslator(data.locale));
@@ -52,8 +54,12 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 	let videoReady = $state(false);
 	let spVideoOpen = $state(false);
 	let videoTitle = $state('');
+	let hasPlayedCurrentVideo = $state(false);
 
 	let progressInterval: ReturnType<typeof setInterval> | null = null;
+	const shouldHighlightPlay = $derived(
+		videoReady && !!videoId && !playing && !hasPlayedCurrentVideo
+	);
 
 	const activePoint = $derived(
 		(() => {
@@ -85,10 +91,12 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 				handleClearAll();
 				break;
 			case 'seekBack':
-				player.seekTo(Math.max(0, player.getCurrentTime() - 5));
+				player.seekTo(Math.max(0, player.getCurrentTime() - SEEK_LONG_SECONDS));
 				break;
 			case 'seekForward':
-				player.seekTo(Math.min(player.getDuration(), player.getCurrentTime() + 5));
+				player.seekTo(
+					Math.min(player.getDuration(), player.getCurrentTime() + SEEK_LONG_SECONDS)
+				);
 				break;
 			case 'nudgeLastSetBack':
 				handleNudgeLastSet(-0.1);
@@ -167,6 +175,9 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 		let shareParamsApplied = false;
 		ytPlayer.onStateChange((state) => {
 			playing = state === 'PLAYING';
+			if (state === 'PLAYING') {
+				hasPlayedCurrentVideo = true;
+			}
 			if (state !== 'UNSTARTED') {
 				const title = ytPlayer.getVideoTitle();
 				if (title) videoTitle = title;
@@ -236,6 +247,8 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 		lastSubmittedInput = urlInput;
 		videoId = id;
 		videoReady = false;
+		playing = false;
+		hasPlayedCurrentVideo = false;
 		machine.clearAll();
 		machineState = machine.getState();
 		// Explicitly load the video; don't rely solely on the $effect in VideoPlayer
@@ -266,6 +279,7 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 		if (playing) {
 			player.pause();
 		} else {
+			hasPlayedCurrentVideo = true;
 			player.play();
 		}
 	}
@@ -429,24 +443,51 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 					<div class="lt-playhead-timecode">{formatTimecode(currentTime, FPS)}</div>
 					<div class="lt-playhead-btns">
 						<button
-							onclick={() => player.seekTo(Math.max(0, currentTime - 1))}
-							aria-label="-1s">−1s</button
+							onclick={() =>
+								player.seekTo(Math.max(0, currentTime - SEEK_LONG_SECONDS))}
+							aria-label="-5s">−5s</button
 						>
 						<button
-							onclick={() => player.seekTo(Math.max(0, currentTime - 1 / FPS))}
-							aria-label="-1f">−1f</button
+							onclick={() =>
+								player.seekTo(Math.max(0, currentTime - SEEK_SHORT_SECONDS))}
+							aria-label="-2s">−2s</button
 						>
 						<button
+							class="lt-playhead-play"
+							class:lt-playhead-glow-active={shouldHighlightPlay}
 							onclick={handlePlayPause}
 							aria-label={playing ? '一時停止' : '再生'}
-						>{playing ? '⏸' : '▶'}</button>
+						>
+							<span class="lt-playhead-play-label" aria-hidden="true">
+								{#if playing}
+									<svg
+										class="lt-playhead-icon"
+										viewBox="0 0 24 24"
+										focusable="false"
+									>
+										<rect x="7" y="5" width="4" height="14" rx="1" />
+										<rect x="13" y="5" width="4" height="14" rx="1" />
+									</svg>
+								{:else}
+									<svg
+										class="lt-playhead-icon"
+										viewBox="0 0 24 24"
+										focusable="false"
+									>
+										<path d="M8 5v14l11-7z" />
+									</svg>
+								{/if}
+							</span>
+						</button>
 						<button
-							onclick={() => player.seekTo(Math.min(duration, currentTime + 1 / FPS))}
-							aria-label="+1f">+1f</button
+							onclick={() =>
+								player.seekTo(Math.min(duration, currentTime + SEEK_SHORT_SECONDS))}
+							aria-label="+2s">+2s</button
 						>
 						<button
-							onclick={() => player.seekTo(Math.min(duration, currentTime + 1))}
-							aria-label="+1s">+1s</button
+							onclick={() =>
+								player.seekTo(Math.min(duration, currentTime + SEEK_LONG_SECONDS))}
+							aria-label="+5s">+5s</button
 						>
 					</div>
 				</div>
@@ -458,6 +499,7 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 					pointB={machineState.status === 'HAS_B' || machineState.status === 'LOOPING'
 						? machineState.pointB
 						: null}
+					{videoReady}
 					{activePoint}
 					fps={FPS}
 					{t}
@@ -571,6 +613,64 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 		cursor: pointer;
 	}
 
+	.lt-playhead-btns .lt-playhead-play {
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
+		flex: 1.5;
+	}
+
+	.lt-playhead-play::before {
+		content: '';
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		z-index: 0;
+		width: 180%;
+		aspect-ratio: 1;
+		border-radius: 999px;
+		background: radial-gradient(circle, var(--color-accent) 0%, transparent 62%);
+		opacity: 0;
+		filter: brightness(70%);
+		transform: translate(-50%, -50%) scale(0.22);
+		transform-origin: center;
+		pointer-events: none;
+	}
+
+	.lt-playhead-glow-active::before {
+		animation: lt-playhead-glow 2500ms ease-in-out infinite;
+	}
+
+	.lt-playhead-play-label {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		z-index: 1;
+	}
+
+	.lt-playhead-icon {
+		display: block;
+		width: 16px;
+		height: 16px;
+		fill: currentColor;
+	}
+
+	@keyframes lt-playhead-glow {
+		0%,
+		100% {
+			opacity: 0.16;
+			filter: brightness(70%);
+			transform: translate(-50%, -50%) scale(0.22);
+		}
+
+		50% {
+			opacity: 0.72;
+			filter: brightness(100%);
+			transform: translate(-50%, -50%) scale(1);
+		}
+	}
+
 	.lt-playhead-btns button:hover {
 		background: var(--color-border);
 		color: var(--color-text);
@@ -597,6 +697,12 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 		font-size: 0.75rem;
 		color: var(--color-text-muted);
 		text-align: center;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.lt-playhead-glow-active::before {
+			animation: none;
+		}
 	}
 
 	@media (max-width: 700px) {
