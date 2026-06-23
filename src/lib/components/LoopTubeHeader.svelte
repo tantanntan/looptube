@@ -351,6 +351,7 @@
 		outline-offset: 2px;
 	}
 
+
 	@media (max-width: 700px) {
 		.lt-header {
 			flex-direction: column;
