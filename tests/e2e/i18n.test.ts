@@ -18,6 +18,7 @@ test.describe('i18n', () => {
 test.describe('Accept-Language locale detection (T035 - RED)', () => {
 	test('Accept-Language: ja shows Japanese strings', async ({ browser }) => {
 		const context = await browser.newContext({
+			locale: 'ja',
 			extraHTTPHeaders: { 'Accept-Language': 'ja,ja-JP;q=0.9' }
 		});
 		const page = await context.newPage();

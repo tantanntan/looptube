@@ -76,6 +76,11 @@ export class FakeVideoPlayer implements VideoPlayerPort {
 		this._errorCallbacks.forEach((cb) => cb(error));
 	}
 
+	simulateStateChange(state: PlayerState): void {
+		this._state = state;
+		this._stateCallbacks.forEach((cb) => cb(state));
+	}
+
 	setCurrentTime(t: number): void {
 		this._currentTime = t;
 	}

@@ -36,7 +36,7 @@
 		"delete_confirm": "このループを削除しますか？",
 		"confirm_yes": "はい",
 		"confirm_no": "いいえ",
-		"empty": "この動画の保存済みループはありません。",
+		"empty": "ループはありません。",
 		"delete": "削除"
 	},
 	"timeline": {
