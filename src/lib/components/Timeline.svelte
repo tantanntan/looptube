@@ -82,8 +82,9 @@
 </script>
 
 <div class="timeline">
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
+		role="application"
+		aria-label={t('timeline.track')}
 		class="timeline-track"
 		data-testid="timeline-track"
 		bind:this={trackEl}

@@ -57,3 +57,7 @@
 		<button onclick={onClearAll}>{t('loop.clear_all')}</button>
 	{/if}
 </div>
+
+<style>
+</style>
+

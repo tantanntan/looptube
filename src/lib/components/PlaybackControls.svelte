@@ -47,3 +47,7 @@
 	/>
 	<span>{loopCount === 'infinite' ? '∞' : `${loopsCompleted} / ${loopCount}`}</span>
 </div>
+
+<style>
+</style>
+

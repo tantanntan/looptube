@@ -40,6 +40,7 @@
 		"delete": "削除"
 	},
 	"timeline": {
+		"track": "動画タイムライン",
 		"zoom_in": "A-B区間にズームイン",
 		"zoom_out": "全体表示に戻す"
 	},

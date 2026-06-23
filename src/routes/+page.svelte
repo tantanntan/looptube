@@ -21,8 +21,6 @@
 	import LoopList from '$lib/components/LoopList.svelte';
 	import LoopTubeHeader from '$lib/components/LoopTubeHeader.svelte';
 	import { createTranslator } from '$lib/i18n/index.js';
-	import { computeZoomWindow } from '$lib/utils/timeline.js';
-	import type { ZoomWindow } from '$lib/utils/timeline.js';
 	import type { Segment } from '$lib/ports/StoragePort.js';
 	import type { PageData } from './$types';
 
@@ -47,7 +45,6 @@
 	let segments = $state<Segment[]>([]);
 	let segmentName = $state('');
 	let zoomActive = $state(false);
-	let zoomWindow = $state<ZoomWindow | null>(null);
 
 	let progressInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -203,7 +200,7 @@
 		videoId = id;
 		const url = new URL($page.url.toString());
 		url.searchParams.set('v', id);
-		goto(url.toString(), { replaceState: true, keepFocus: true });
+		await goto(url.toString(), { replaceState: true, keepFocus: true });
 		await loadSegments();
 	}
 
@@ -259,35 +256,17 @@
 	function handleZoomToggle() {
 		const s = machine.getState();
 		if (s.status !== 'LOOPING') return;
-		if (!zoomActive) {
-			zoomWindow = computeZoomWindow(s.pointA, s.pointB, duration);
-			zoomActive = true;
-		} else {
-			zoomActive = false;
-			zoomWindow = null;
-		}
+		zoomActive = !zoomActive;
 	}
 
 	function handleDragA(seconds: number) {
 		machine.setA(seconds);
 		machineState = machine.getState();
-		if (zoomActive) {
-			const s = machine.getState();
-			if (s.status === 'LOOPING') {
-				zoomWindow = computeZoomWindow(s.pointA, s.pointB, duration);
-			}
-		}
 	}
 
 	function handleDragB(seconds: number) {
 		machine.setB(seconds);
 		machineState = machine.getState();
-		if (zoomActive) {
-			const s = machine.getState();
-			if (s.status === 'LOOPING') {
-				zoomWindow = computeZoomWindow(s.pointA, s.pointB, duration);
-			}
-		}
 	}
 
 	function handleSeek(seconds: number) {
