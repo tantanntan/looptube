@@ -9,14 +9,11 @@ export type ABLoopState =
 			pointA: number;
 			pointB: number;
 			lastSetPoint: 'A' | 'B';
-			loopCount: number | 'infinite';
-			loopsCompleted: number;
 	  };
 
 export type TickAction =
 	| { type: 'NONE' }
-	| { type: 'SEEK'; to: number }
-	| { type: 'STOP_AND_SEEK'; to: number };
+	| { type: 'SEEK'; to: number };
 
 type SetResult = { ok: true } | { ok: false; error: 'B_BEFORE_A' | 'A_AFTER_B' };
 
@@ -43,9 +40,7 @@ export class ABLoopStateMachine {
 				status: 'LOOPING',
 				pointA: t,
 				pointB: s.pointB,
-				lastSetPoint: 'A',
-				loopCount: 'infinite',
-				loopsCompleted: 0
+				lastSetPoint: 'A'
 			};
 			return { ok: true };
 		}
@@ -71,9 +66,7 @@ export class ABLoopStateMachine {
 				status: 'LOOPING',
 				pointA: s.pointA,
 				pointB: t,
-				lastSetPoint: 'B',
-				loopCount: 'infinite',
-				loopsCompleted: 0
+				lastSetPoint: 'B'
 			};
 			return { ok: true };
 		}
@@ -105,36 +98,10 @@ export class ABLoopStateMachine {
 		this.state = { status: 'IDLE' };
 	}
 
-	setLoopCount(count: number | 'infinite'): void {
-		const s = this.state;
-		if (s.status === 'LOOPING') {
-			this.state = { ...s, loopCount: count };
-		}
-	}
-
 	tick(currentTime: number): TickAction {
 		const s = this.state;
 		if (s.status !== 'LOOPING') return { type: 'NONE' };
-		// After finite-loop completion, loopsCompleted equals loopCount — don't rewind
-		if (s.loopCount !== 'infinite' && s.loopsCompleted >= s.loopCount) {
-			return { type: 'NONE' };
-		}
 		if (currentTime < s.pointB) return { type: 'NONE' };
-
-		const nextCompleted = s.loopsCompleted + 1;
-
-		if (s.loopCount === 'infinite') {
-			this.state = { ...s, loopsCompleted: nextCompleted };
-			return { type: 'SEEK', to: s.pointA };
-		}
-
-		if (nextCompleted < s.loopCount) {
-			this.state = { ...s, loopsCompleted: nextCompleted };
-			return { type: 'SEEK', to: s.pointA };
-		}
-
-		// Final repetition: keep loopCount as-is so loopsCompleted >= loopCount on next tick
-		this.state = { ...s, loopsCompleted: nextCompleted };
-		return { type: 'STOP_AND_SEEK', to: s.pointB };
+		return { type: 'SEEK', to: s.pointA };
 	}
 }

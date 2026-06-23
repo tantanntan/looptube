@@ -8,9 +8,14 @@
 	} from '$lib/utils/timeline.js';
 	import type { ZoomWindow } from '$lib/utils/timeline.js';
 
-	const SPEED_CHIPS = [0.5, 0.75, 1, 1.5] as const;
+	const SPEED_CHIPS = [0.25, 0.5, 0.75, 1, 1.5, 2] as const;
 	const BAR_COUNT = 90;
 	const TWO_PI = Math.PI * 2;
+
+	function speedLabel(value: number): string {
+		if (Number.isInteger(value)) return value.toFixed(1);
+		return String(value);
+	}
 
 	function hAt(x: number): number {
 		const raw = Math.abs(
@@ -132,7 +137,7 @@
 					class="speed-chip"
 					class:active={speed === s}
 					onclick={() => onSpeedChange?.(s)}
-					aria-pressed={speed === s}>{s}×</button
+					aria-pressed={speed === s}>{speedLabel(s)}×</button
 				>
 			{/each}
 		</div>
@@ -145,7 +150,7 @@
 						data-testid="zoom-toggle"
 						onclick={onZoomOut}
 						aria-label={t('timeline.zoom_out')}
-						>×1</button
+						>通常</button
 					>
 				{:else}
 					<button
@@ -154,7 +159,7 @@
 						data-testid="zoom-toggle"
 						onclick={onZoomIn}
 						aria-label={t('timeline.zoom_in')}
-						>×2</button
+						>拡大</button
 					>
 				{/if}
 			</div>
@@ -234,11 +239,15 @@
 
 	.speed-chips {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 4px;
+		min-width: 0;
 	}
 
 	.speed-chip {
-		padding: 2px 8px;
+		width: 48px;
+		flex: 0 0 48px;
+		padding: 2px 0;
 		background: var(--color-surface-raised);
 		color: var(--color-text-secondary);
 		border: 1px solid var(--color-border);
@@ -331,7 +340,7 @@
 	.marker::before {
 		content: '';
 		position: absolute;
-		top: 0;
+		top: 18px;
 		bottom: 0;
 		width: 2px;
 		border-radius: 1px;
@@ -351,19 +360,27 @@
 
 	.marker-label {
 		position: absolute;
-		top: 2px;
+		top: 0;
+		width: 15px;
+		height: 18px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		clip-path: polygon(0 0, 100% 0, 100% 68%, 50% 100%, 0 68%);
 		font-family: var(--font-brand);
-		font-size: 0.625rem;
+		font-size: 0.6875rem;
 		font-weight: 700;
-		letter-spacing: 0.05em;
+		letter-spacing: 0;
+		line-height: 1;
+		color: var(--color-text);
 		pointer-events: none;
 	}
 
 	.marker-a .marker-label {
-		color: var(--color-point-a);
+		background: var(--color-point-a);
 	}
 
 	.marker-b .marker-label {
-		color: var(--color-point-b);
+		background: var(--color-point-b);
 	}
 </style>

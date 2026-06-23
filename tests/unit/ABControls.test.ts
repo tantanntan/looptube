@@ -14,6 +14,37 @@ describe('ABControls.svelte', () => {
 		expect(screen.getByRole('button', { name: /^set b$/i })).toBeTruthy();
 	});
 
+	it('highlights Set A before A is set and Set B after only A is set', () => {
+		const { unmount } = render(ABControls, { pointA: null, pointB: null, videoReady: true, t });
+		expect(screen.getByRole('button', { name: /^set a$/i })).toHaveClass('ab-btn-glow-active');
+		expect(screen.getByRole('button', { name: /^set b$/i })).not.toHaveClass(
+			'ab-btn-glow-active'
+		);
+
+		unmount();
+		render(ABControls, { pointA: 10, pointB: null, videoReady: true, t });
+		expect(screen.getByRole('button', { name: /^set a$/i })).not.toHaveClass(
+			'ab-btn-glow-active'
+		);
+		expect(screen.getByRole('button', { name: /^set b$/i })).toHaveClass('ab-btn-glow-active');
+	});
+
+	it('does not highlight Set A or Set B before the video is ready', () => {
+		const { unmount } = render(ABControls, { pointA: null, pointB: null, videoReady: false, t });
+		expect(screen.getByRole('button', { name: /^set a$/i })).not.toHaveClass(
+			'ab-btn-glow-active'
+		);
+		expect(screen.getByRole('button', { name: /^set b$/i })).not.toHaveClass(
+			'ab-btn-glow-active'
+		);
+
+		unmount();
+		render(ABControls, { pointA: 10, pointB: null, videoReady: false, t });
+		expect(screen.getByRole('button', { name: /^set b$/i })).not.toHaveClass(
+			'ab-btn-glow-active'
+		);
+	});
+
 	it('displays pointA in MM:SS:FF format when set', () => {
 		render(ABControls, { pointA: 63.2, pointB: null, t });
 		// formatTimecode(63.2, 30) = '01:03:06'
@@ -26,10 +57,9 @@ describe('ABControls.svelte', () => {
 		expect(screen.getByText(/01:18:15/)).toBeTruthy();
 	});
 
-	it('displays --:--:-- placeholder when pointA is not set', () => {
+	it('hides unset point placeholders in compact state', () => {
 		render(ABControls, { pointA: null, pointB: null, t });
-		const placeholders = screen.getAllByText('--:--:--');
-		expect(placeholders.length).toBeGreaterThanOrEqual(2);
+		expect(screen.queryByText('--:--:--')).toBeNull();
 	});
 
 	it('calls onSetA callback when A button clicked', async () => {
@@ -49,6 +79,31 @@ describe('ABControls.svelte', () => {
 	it('shows loupe slider for A when pointA is set', () => {
 		render(ABControls, { pointA: 10, pointB: null, t });
 		expect(screen.getByRole('slider', { name: /point a/i })).toBeTruthy();
+	});
+
+	it('moves A loupe drag at one quarter of the previous rate', async () => {
+		const onNudgeA = vi.fn();
+		render(ABControls, { pointA: 10, pointB: null, fps: 30, t, onNudgeA });
+		const slider = screen.getByRole('slider', { name: /point a/i });
+		Object.defineProperty(slider, 'setPointerCapture', { value: vi.fn() });
+		Object.defineProperty(slider, 'getBoundingClientRect', {
+			value: () => ({
+				x: 0,
+				y: 0,
+				width: 360,
+				height: 10,
+				top: 0,
+				right: 360,
+				bottom: 10,
+				left: 0,
+				toJSON: () => ({})
+			})
+		});
+
+		await fireEvent.pointerDown(slider, { pointerId: 1, clientX: 0 });
+		await fireEvent.pointerMove(slider, { pointerId: 1, clientX: 12 });
+
+		expect(onNudgeA).toHaveBeenCalledWith(1);
 	});
 
 	it('hides Clear A button when pointA is null', () => {

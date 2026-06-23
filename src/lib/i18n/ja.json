@@ -23,11 +23,7 @@
 		"not_set": "未設定"
 	},
 	"playback": {
-		"speed": "再生速度",
-		"loop_count": "ループ回数",
-		"infinite": "無限",
-		"times": "回",
-		"counter": "{n} / {m}"
+		"speed": "再生速度"
 	},
 	"loops": {
 		"section_heading": "保存済みループ",

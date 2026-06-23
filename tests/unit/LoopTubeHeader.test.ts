@@ -18,4 +18,16 @@ describe('LoopTubeHeader.svelte', () => {
 		const dot = heading.querySelector('.dot');
 		expect(dot?.classList.contains('dot-playing')).toBe(true);
 	});
+
+	it('highlights the load button only when it is enabled', () => {
+		const { unmount } = render(LoopTubeHeader);
+		const activeButton = screen.getByRole('button', { name: '読み込む' });
+		expect(activeButton.classList.contains('lt-url-submit-active')).toBe(true);
+
+		unmount();
+		render(LoopTubeHeader, { submitDisabled: true });
+		const disabledButton = screen.getByRole('button', { name: '読み込む' });
+		expect(disabledButton).toBeDisabled();
+		expect(disabledButton.classList.contains('lt-url-submit-active')).toBe(false);
+	});
 });
