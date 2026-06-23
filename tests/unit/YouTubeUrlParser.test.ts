@@ -29,6 +29,10 @@ describe('extractVideoId', () => {
 	it('trims whitespace from raw ID', () => {
 		expect(extractVideoId('  dQw4w9WgXcQ  ')).toBe('dQw4w9WgXcQ');
 	});
+
+	it('falls back to raw input for a URL with no path segments', () => {
+		expect(extractVideoId('https://youtube.com')).toBe('https://youtube.com');
+	});
 });
 
 describe('buildThumbnailUrl', () => {
