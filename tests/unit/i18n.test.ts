@@ -114,11 +114,6 @@ describe('createTranslator', () => {
 		expect(t('timeline.zoom_out')).not.toBe('timeline.zoom_out');
 	});
 
-	it('looks up new playback.counter key', () => {
-		const t = createTranslator('en');
-		expect(t('playback.counter')).not.toBe('playback.counter');
-	});
-
 	it('looks up loops.* keys in Japanese', () => {
 		const t = createTranslator('ja');
 		expect(t('loops.section_heading')).not.toBe('loops.section_heading');
@@ -143,7 +138,6 @@ describe('SC-007: no hard-coded user-facing strings in Svelte templates', () => 
 		'Delete this loop',
 		'Load',
 		'Speed',
-		'Loop Count',
 	];
 
 	// SegmentList.svelte is superseded by LoopList.svelte — excluded from i18n scan

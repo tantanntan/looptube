@@ -57,6 +57,15 @@ describe('UrlSerializer', () => {
 			if (result.ok) expect(result.speed).toBe(1.0);
 		});
 
+		it('accepts 0.25 playback speed', () => {
+			const result = UrlSerializer.parse('https://looptube.io/?v=abc&a=5&b=15&s=0.25');
+			expect(result.ok).toBe(true);
+			if (result.ok) {
+				expect(result.speed).toBe(0.25);
+				expect(result.warnings).toEqual([]);
+			}
+		});
+
 		it('returns ok:false when pointA param is missing', () => {
 			const result = UrlSerializer.parse('https://looptube.io/?v=abc&b=20');
 			expect(result.ok).toBe(false);

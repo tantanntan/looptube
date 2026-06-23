@@ -23,11 +23,7 @@
 		"not_set": "not set"
 	},
 	"playback": {
-		"speed": "Speed",
-		"loop_count": "Loop Count",
-		"infinite": "Infinite",
-		"times": "times",
-		"counter": "{n} / {m}"
+		"speed": "Speed"
 	},
 	"loops": {
 		"section_heading": "Saved Loops",

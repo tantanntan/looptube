@@ -228,98 +228,16 @@ describe('ABLoopStateMachine', () => {
 			expect(action).toEqual({ type: 'SEEK', to: 10 });
 		});
 
-		it('increments loopsCompleted on each SEEK', () => {
-			const m = new ABLoopStateMachine();
-			m.setA(5);
-			m.setB(20);
-			m.tick(20);
-			const s = m.getState();
-			if (s.status === 'LOOPING') expect(s.loopsCompleted).toBe(1);
-		});
 	});
 
-	describe('setLoopCount / finite loop', () => {
-		it('setLoopCount when NOT LOOPING → state unchanged', () => {
-			const m = new ABLoopStateMachine();
-			m.setLoopCount(3);
-			expect(m.getState().status).toBe('IDLE');
-
-			m.setA(10);
-			m.setLoopCount(3);
-			expect(m.getState().status).toBe('HAS_A');
-		});
-
-		it('returns STOP_AND_SEEK to pointB (not pointA) on final repetition', () => {
-			const m = new ABLoopStateMachine();
-			m.setA(10);
-			m.setB(30);
-			m.setLoopCount(2);
-			m.tick(30); // loop 1 → SEEK
-			const action = m.tick(30); // loop 2 → STOP_AND_SEEK to pointB
-			expect(action).toEqual({ type: 'STOP_AND_SEEK', to: 30 });
-		});
-
-		it('stays LOOPING with original loopCount after final repetition (not reset to infinite)', () => {
-			const m = new ABLoopStateMachine();
-			m.setA(10);
-			m.setB(30);
-			m.setLoopCount(1);
-			m.tick(30);
-			const s = m.getState();
-			expect(s.status).toBe('LOOPING');
-			if (s.status === 'LOOPING') {
-				expect(s.loopCount).toBe(1);
-				expect(s.pointA).toBe(10);
-				expect(s.pointB).toBe(30);
-				expect(s.loopsCompleted).toBe(1);
-			}
-		});
-
-		it('preserves pointA and pointB after finite-loop completion', () => {
-			const m = new ABLoopStateMachine();
-			m.setA(5);
-			m.setB(25);
-			m.setLoopCount(3);
-			m.tick(25); // loop 1
-			m.tick(25); // loop 2
-			m.tick(25); // loop 3 — final
-			const s = m.getState();
-			expect(s.status).toBe('LOOPING');
-			if (s.status === 'LOOPING') {
-				expect(s.pointA).toBe(5);
-				expect(s.pointB).toBe(25);
-			}
-		});
-
-		it('after finite-loop completion, subsequent tick returns NONE (loop finished, no rewind)', () => {
-			const m = new ABLoopStateMachine();
-			m.setA(10);
-			m.setB(30);
-			m.setLoopCount(1);
-			m.tick(30); // final → STOP_AND_SEEK
-			const nextAction = m.tick(30);
-			expect(nextAction).toEqual({ type: 'NONE' });
-		});
-
-		it('after finite-loop completion, repeated ticks all return NONE', () => {
-			const m = new ABLoopStateMachine();
-			m.setA(5);
-			m.setB(20);
-			m.setLoopCount(2);
-			m.tick(20); // loop 1
-			m.tick(20); // loop 2 → STOP_AND_SEEK
-			expect(m.tick(20)).toEqual({ type: 'NONE' });
-			expect(m.tick(20)).toEqual({ type: 'NONE' });
-			expect(m.tick(20)).toEqual({ type: 'NONE' });
-		});
-
-		it('never returns STOP_AND_SEEK when count is infinite', () => {
+	describe('infinite loop only', () => {
+		it('always seeks back to A when currentTime reaches B', () => {
 			const m = new ABLoopStateMachine();
 			m.setA(0);
 			m.setB(10);
 			for (let i = 0; i < 5; i++) {
 				const action = m.tick(10);
-				expect(action.type).not.toBe('STOP_AND_SEEK');
+				expect(action).toEqual({ type: 'SEEK', to: 0 });
 			}
 		});
 	});

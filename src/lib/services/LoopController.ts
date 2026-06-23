@@ -19,9 +19,6 @@ export class LoopController {
 			const action = this.machine.tick(this.player.getCurrentTime());
 			if (action.type === 'SEEK') {
 				this.player.seekTo(action.to);
-			} else if (action.type === 'STOP_AND_SEEK') {
-				this.player.seekTo(action.to);
-				this.player.pause();
 			}
 		}, POLL_INTERVAL_MS);
 	}

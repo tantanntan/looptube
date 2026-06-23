@@ -81,6 +81,31 @@ describe('ABControls.svelte', () => {
 		expect(screen.getByRole('slider', { name: /point a/i })).toBeTruthy();
 	});
 
+	it('moves A loupe drag at one quarter of the previous rate', async () => {
+		const onNudgeA = vi.fn();
+		render(ABControls, { pointA: 10, pointB: null, fps: 30, t, onNudgeA });
+		const slider = screen.getByRole('slider', { name: /point a/i });
+		Object.defineProperty(slider, 'setPointerCapture', { value: vi.fn() });
+		Object.defineProperty(slider, 'getBoundingClientRect', {
+			value: () => ({
+				x: 0,
+				y: 0,
+				width: 360,
+				height: 10,
+				top: 0,
+				right: 360,
+				bottom: 10,
+				left: 0,
+				toJSON: () => ({})
+			})
+		});
+
+		await fireEvent.pointerDown(slider, { pointerId: 1, clientX: 0 });
+		await fireEvent.pointerMove(slider, { pointerId: 1, clientX: 12 });
+
+		expect(onNudgeA).toHaveBeenCalledWith(1);
+	});
+
 	it('hides Clear A button when pointA is null', () => {
 		render(ABControls, { pointA: null, pointB: null, t });
 		expect(screen.queryByRole('button', { name: /clear a/i })).toBeNull();

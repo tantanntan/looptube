@@ -2,6 +2,7 @@
 	import { formatTimecode } from '$lib/utils/timeline.js';
 
 	const LOUPE_W = 60;
+	const LOUPE_DRAG_RATE = 0.25;
 
 	type Props = {
 		pointA: number | null;
@@ -58,7 +59,7 @@
 		const rect = el.getBoundingClientRect();
 		const pxPerFrame = rect.width / (2 * LOUPE_W * fps);
 		const dx = e.clientX - loupeStartX;
-		const frameDelta = Math.round(dx / pxPerFrame);
+		const frameDelta = Math.round((dx / pxPerFrame) * LOUPE_DRAG_RATE);
 		if (frameDelta === 0) return;
 		loupeStartX = e.clientX;
 		if (loupeDragging === 'a') onNudgeA?.(frameDelta / fps);

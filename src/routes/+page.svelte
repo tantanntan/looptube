@@ -17,7 +17,6 @@
 	import VideoPlayer from '$lib/components/VideoPlayer.svelte';
 	import ABControls from '$lib/components/ABControls.svelte';
 	import Timeline from '$lib/components/Timeline.svelte';
-	import PlaybackControls from '$lib/components/PlaybackControls.svelte';
 	import LoopList from '$lib/components/LoopList.svelte';
 	import LoopTubeHeader from '$lib/components/LoopTubeHeader.svelte';
 	import { createTranslator } from '$lib/i18n/index.js';
@@ -47,7 +46,6 @@
 	let machineState = $state(machine.getState());
 	let playing = $state(false);
 	let speed = $state(1.0);
-	let loopCount = $state<number | 'infinite'>('infinite');
 	let segments = $state<Segment[]>([]);
 	let segmentName = $state('');
 	let zoom = $state(1);
@@ -151,6 +149,7 @@
 		if (vParam) {
 			videoId = vParam;
 			urlInput = vParam;
+			lastSubmittedInput = vParam;
 			await loadSegments();
 		}
 
@@ -360,11 +359,6 @@
 		player.setPlaybackRate(newSpeed);
 	}
 
-	function handleLoopCountChange(count: number | 'infinite') {
-		loopCount = count;
-		machine.setLoopCount(count);
-	}
-
 	let shareToast = $state('');
 
 	async function handleShare() {
@@ -429,12 +423,6 @@
 				onSpeedChange={handleSpeedChange}
 			/>
 
-			<PlaybackControls
-				{loopCount}
-				loopsCompleted={machineState.status === 'LOOPING' ? machineState.loopsCompleted : 0}
-				{t}
-				onLoopCountChange={handleLoopCountChange}
-			/>
 		</div>
 
 		<div id="lt-controls">
