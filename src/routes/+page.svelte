@@ -371,6 +371,7 @@ import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 <main class="lt-page">
 	<LoopTubeHeader
 		{urlInput}
+		isPlaying={playing}
 		onUrlInput={(v) => (urlInput = v)}
 		onUrlSubmit={handleLoad}
 	/>

@@ -11,4 +11,11 @@ describe('LoopTubeHeader.svelte', () => {
 		expect(heading).toBeTruthy();
 		expect(heading.textContent).toContain('LOOPTUBE');
 	});
+
+	it('animates the logo dot while playback is active', () => {
+		render(LoopTubeHeader, { isPlaying: true });
+		const heading = screen.getByRole('heading', { level: 1 });
+		const dot = heading.querySelector('.dot');
+		expect(dot?.classList.contains('dot-playing')).toBe(true);
+	});
 });

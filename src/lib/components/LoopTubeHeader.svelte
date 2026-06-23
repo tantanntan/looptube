@@ -1,11 +1,17 @@
 <script lang="ts">
 	type Props = {
 		urlInput?: string;
+		isPlaying?: boolean;
 		onUrlInput?: (val: string) => void;
 		onUrlSubmit?: () => void;
 	};
 
-	let { urlInput = '', onUrlInput, onUrlSubmit }: Props = $props();
+	let {
+		urlInput = '',
+		isPlaying = false,
+		onUrlInput,
+		onUrlSubmit
+	}: Props = $props();
 
 	function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
@@ -24,7 +30,7 @@
 <header class="lt-header">
 	<div class="lt-logotype-group">
 		<div class="lt-logotype" role="heading" aria-level="1" aria-label="LoopTube">
-			<span class="loop">LOOP</span><span class="tube">TUBE</span><span class="dot">.</span>
+			<span class="loop">LOOP</span><span class="tube">TUBE</span><span class="dot" class:dot-playing={isPlaying}>.</span>
 		</div>
 		<div class="lt-tagline">In / Out Frame Editor</div>
 	</div>
@@ -87,7 +93,50 @@
 	}
 
 	.dot {
-		color: var(--color-accent);
+		display: inline-block;
+		position: relative;
+		width: 0.34em;
+		height: 1em;
+		color: transparent;
+		vertical-align: baseline;
+	}
+
+	.dot::before {
+		content: '';
+		position: absolute;
+		left: 50%;
+		top: 72%;
+		width: 0.18em;
+		height: 0.18em;
+		border-radius: 999px;
+		background: var(--color-accent);
+		transform: translate(-50%, -50%) scale(1);
+		transform-origin: center;
+	}
+
+	.dot-playing::before {
+		animation: logo-dot-heartbeat 900ms ease-in-out infinite;
+	}
+
+	@keyframes logo-dot-heartbeat {
+		0%,
+		100% {
+			transform: translate(-50%, -50%) scale(1);
+		}
+
+		45% {
+			transform: translate(-50%, -50%) scale(1.5);
+		}
+
+		65% {
+			transform: translate(-50%, -50%) scale(1);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.dot-playing::before {
+			animation: none;
+		}
 	}
 
 	.lt-tagline {
