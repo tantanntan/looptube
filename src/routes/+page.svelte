@@ -2,9 +2,9 @@
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
 	import { ABLoopStateMachine } from '$lib/core/ABLoopStateMachine.js';
 	import { UrlSerializer } from '$lib/core/UrlSerializer.js';
+import { applyShareParams } from '$lib/core/ShareParamsApplier.js';
 	import { KeyboardHandler } from '$lib/core/KeyboardHandler.js';
 	import { SegmentRepository } from '$lib/core/SegmentRepository.js';
 	import { FakeVideoPlayer } from '$lib/fakes/FakeVideoPlayer.js';
@@ -162,11 +162,28 @@
 		controller.stop();
 		const ytPlayer = new YouTubePlayerAdapter('yt-player', YT);
 		ytPlayer.initialize();
+		let shareParamsApplied = false;
 		ytPlayer.onStateChange((state) => {
 			playing = state === 'PLAYING';
 			if (state !== 'UNSTARTED') {
-				const t = ytPlayer.getVideoTitle();
-				if (t) videoTitle = t;
+				const title = ytPlayer.getVideoTitle();
+				if (title) videoTitle = title;
+			}
+			if (!shareParamsApplied && (state === 'BUFFERING' || state === 'PLAYING')) {
+				if (shareResult.ok && ytPlayer.getDuration() > 0) {
+					shareParamsApplied = true;
+					const toastKey = applyShareParams(machine, ytPlayer, shareResult);
+					if (toastKey) {
+						shareToast = t(toastKey);
+						setTimeout(() => { shareToast = ''; }, 3000);
+					}
+					speed = shareResult.speed;
+					ytPlayer.setPlaybackRate(shareResult.speed);
+					machineState = machine.getState();
+					if (machineState.status === 'LOOPING') {
+						ytPlayer.seekTo(machineState.pointA);
+					}
+				}
 			}
 		});
 
@@ -181,15 +198,6 @@
 			// Load video if videoId was set before the player became ready
 			if (videoId) {
 				ytPlayer.loadVideo(videoId);
-			}
-			if (shareResult.ok) {
-				const d = ytPlayer.getDuration();
-				const clamped = UrlSerializer.clampToDuration(shareResult, d);
-				machine.setA(clamped.pointA);
-				machine.setB(clamped.pointB);
-				speed = shareResult.speed;
-				ytPlayer.setPlaybackRate(shareResult.speed);
-				machineState = machine.getState();
 			}
 			controller.start();
 			progressInterval = setInterval(() => {
@@ -221,11 +229,13 @@
 		const id = normalizeVideoId(urlInput);
 		if (!id) return;
 		videoId = id;
+		machine.clearAll();
+		machineState = machine.getState();
 		// Explicitly load the video; don't rely solely on the $effect in VideoPlayer
 		await player.loadVideo(id);
 		const url = new URL($page.url.toString());
 		url.searchParams.set('v', id);
-		await goto(url.toString(), { replaceState: true, keepFocus: true });
+		history.replaceState(history.state, '', url.toString());
 		await loadSegments();
 	}
 
@@ -235,7 +245,13 @@
 	}
 
 	function handleSetB() {
-		machine.setB(player.getCurrentTime());
+		const s = machine.getState();
+		let t = player.getCurrentTime();
+		if ((s.status === 'HAS_A' || s.status === 'LOOPING') && t <= s.pointA) {
+			t = Math.min(s.pointA + 0.1, duration);
+			if (t <= s.pointA) return;
+		}
+		machine.setB(t);
 		machineState = machine.getState();
 	}
 
@@ -370,38 +386,36 @@
 			<div class="lt-video-body" id="lt-video-body">
 				<VideoPlayer {player} {videoId} />
 			</div>
-			{#if videoId}
-				<Timeline
-					{currentTime}
-					{duration}
-					pointA={machineState.status === 'HAS_A' || machineState.status === 'LOOPING'
-						? machineState.pointA
-						: null}
-					pointB={machineState.status === 'HAS_B' || machineState.status === 'LOOPING'
-						? machineState.pointB
-						: null}
-					{zoom}
-					{speed}
-					{t}
-					onDragA={handleDragA}
-					onDragB={handleDragB}
-					onZoomIn={handleZoomIn}
-					onZoomOut={handleZoomOut}
-					onSeek={handleSeek}
-					onSpeedChange={handleSpeedChange}
-				/>
+			<Timeline
+				{currentTime}
+				{duration}
+				pointA={machineState.status === 'HAS_A' || machineState.status === 'LOOPING'
+					? machineState.pointA
+					: null}
+				pointB={machineState.status === 'HAS_B' || machineState.status === 'LOOPING'
+					? machineState.pointB
+					: null}
+				{zoom}
+				{speed}
+				{t}
+				onDragA={handleDragA}
+				onDragB={handleDragB}
+				onZoomIn={handleZoomIn}
+				onZoomOut={handleZoomOut}
+				onSeek={handleSeek}
+				onSpeedChange={handleSpeedChange}
+			/>
 
-				<PlaybackControls
-					{loopCount}
-					loopsCompleted={machineState.status === 'LOOPING' ? machineState.loopsCompleted : 0}
-					{t}
-					onLoopCountChange={handleLoopCountChange}
-				/>
-			{/if}
+			<PlaybackControls
+				{loopCount}
+				loopsCompleted={machineState.status === 'LOOPING' ? machineState.loopsCompleted : 0}
+				{t}
+				onLoopCountChange={handleLoopCountChange}
+			/>
 		</div>
 
-		{#if videoId}
-			<div id="lt-controls">
+		<div id="lt-controls">
+			{#if videoId}
 				<div class="lt-playhead-panel">
 					<div class="lt-playhead-timecode">{formatTimecode(currentTime, FPS)}</div>
 					<div class="lt-playhead-btns">
@@ -451,19 +465,19 @@
 					<button type="button" class="lt-share-btn" onclick={handleShare}>共有リンクをコピー</button>
 					{#if shareToast}<p role="status" class="lt-share-toast">{shareToast}</p>{/if}
 				{/if}
+			{/if}
 
-				<LoopList
-					loops={segments}
-					{t}
-					onLoad={handleLoadSegment}
-					onDelete={handleDeleteSegment}
-					canSave={machineState.status === 'LOOPING'}
-					{segmentName}
-					onSegmentNameChange={(n) => (segmentName = n)}
-					onSave={handleSaveSegment}
-				/>
-			</div>
-		{/if}
+			<LoopList
+				loops={segments}
+				{t}
+				onLoad={handleLoadSegment}
+				onDelete={handleDeleteSegment}
+				canSave={machineState.status === 'LOOPING'}
+				{segmentName}
+				onSegmentNameChange={(n) => (segmentName = n)}
+				onSave={handleSaveSegment}
+			/>
+		</div>
 	</div>
 </main>
 

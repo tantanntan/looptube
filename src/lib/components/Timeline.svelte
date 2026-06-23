@@ -53,7 +53,7 @@
 		onSpeedChange?: (s: number) => void;
 	} = $props();
 
-	let trackEl: HTMLDivElement | undefined = $state();
+	let trackEl: HTMLDivElement | undefined;
 	let dragging: 'A' | 'B' | null = $state(null);
 
 	const zoomActive = $derived(zoom > 1);
@@ -126,7 +126,7 @@
 <div class="timeline">
 	<div class="timeline-header">
 		<div class="speed-chips">
-			{#each SPEED_CHIPS as s}
+			{#each SPEED_CHIPS as s (s)}
 				<button
 					type="button"
 					class="speed-chip"
@@ -139,11 +139,21 @@
 		{#if pointA !== null && pointB !== null}
 			<div class="zoom-buttons">
 				{#if zoomActive}
-					<button type="button" class="zoom-btn" onclick={onZoomOut} aria-label="ズームアウト"
+					<button
+						type="button"
+						class="zoom-btn"
+						data-testid="zoom-toggle"
+						onclick={onZoomOut}
+						aria-label={t('timeline.zoom_out')}
 						>×1</button
 					>
 				{:else}
-					<button type="button" class="zoom-btn" onclick={onZoomIn} aria-label="ズームイン"
+					<button
+						type="button"
+						class="zoom-btn"
+						data-testid="zoom-toggle"
+						onclick={onZoomIn}
+						aria-label={t('timeline.zoom_in')}
 						>×2</button
 					>
 				{/if}
@@ -155,14 +165,14 @@
 		aria-label={t('timeline.track')}
 		class="timeline-track"
 		data-testid="timeline-track"
-		bind:this={trackEl}
+		{@attach (el) => { trackEl = el as HTMLDivElement; return () => { trackEl = undefined; }; }}
 		onpointerdown={onTrackPointerDown}
 		onpointermove={onPointerMove}
 		onpointerup={onPointerUp}
 		onpointercancel={onPointerUp}
 	>
 		<div class="waveform" aria-hidden="true">
-			{#each barStyles as bar}
+			{#each barStyles as bar, i (i)}
 				<div
 					class="waveform-bar"
 					style="left: {bar.left}; height: {bar.height}; background: {bar.color};"

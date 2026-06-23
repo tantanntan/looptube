@@ -8,6 +8,7 @@ test.describe('Share URL', () => {
 		await expect(page.getByRole('main')).toBeVisible();
 	});
 
+	// Unit tests cover this in tests/unit/shared-url-restore.test.ts — E2E requires real YouTube player; verify manually
 	test.skip('share URL restores video and loop', async ({ page, context }) => {
 		// Set up loop
 		await page.goto('/?v=dQw4w9WgXcQ');
@@ -18,6 +19,7 @@ test.describe('Share URL', () => {
 		await newPage.close();
 	});
 
+	// Unit tests cover this in tests/unit/shared-url-restore.test.ts — E2E requires real YouTube player; verify manually
 	test.skip('clamped loop shows warning message', async ({ page }) => {
 		// Open a share URL where pointB > video duration
 		await page.goto('/?v=dQw4w9WgXcQ&a=0&b=99999&s=1.0');

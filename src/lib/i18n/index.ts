@@ -12,7 +12,7 @@ export function parseLocale(acceptLanguage: string): Locale {
 
 	const tags = acceptLanguage
 		.split(',')
-		.map((tag) => {
+		.map((tag, i) => {
 			const [langQ, qPart] = tag.split(';').map((s) => s.trim());
 			const lang = langQ.toLowerCase();
 			let q = 1.0;
@@ -20,10 +20,10 @@ export function parseLocale(acceptLanguage: string): Locale {
 				const m = qPart.match(/^q=([\d.]+)$/);
 				q = m ? parseFloat(m[1]) : 0;
 			}
-			return { lang, q };
+			return { lang, q, i };
 		})
 		.filter(({ lang }) => lang && lang !== '*')
-		.sort((a, b) => b.q - a.q);
+		.sort((a, b) => b.q - a.q || a.i - b.i);
 
 	for (const { lang } of tags) {
 		const primary = lang.split('-')[0];
